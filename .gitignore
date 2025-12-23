@@ -1,0 +1,20 @@
+# Secrets & Konfiguration (EXTREM WICHTIG)
+.env
+auth.json
+secrets.txt
+
+# Python-spezifische Dateien
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Betriebssystem-spezifische Dateien
+.DS_Store
+Thumbs.db
+
+# Lokale Daten (Falls du Testbilder im Ordner hast)
+tmp/
+*.log

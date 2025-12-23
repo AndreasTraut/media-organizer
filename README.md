@@ -2,6 +2,8 @@
 
 Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z.B. Google Photos Takeout) in eine strukturierte Ordnerhierarchie auf einem **Synology NAS**.
 
+![20251223_152623-COLLAGE](https://github.com/user-attachments/assets/131b96d2-a430-4163-baa1-adf2a62677c5)
+
 ## Über den Autor
 **Andreas Traut** ist ein Senior BI-Entwickler, der sich auf Data Warehousing, SQL Server und Microsoft BI Stack spezialisiert hat. Dieses Projekt ist ein privates Beispiel dafür, wie KI-gesteuerte Entwicklung und Python reale Herausforderungen bei der Datenorganisation lösen können.
 
@@ -24,3 +26,4 @@ Als **Senior BI Developer** habe ich dieses Tool entwickelt, um eine robuste "Si
 2. Abhängigkeiten installieren: `pip install -r requirements.txt`
 3. `.env.example` kopieren nach `.env` und Pfade anpassen.
 4. Skript ausführen: `python photo_sort.py`
+

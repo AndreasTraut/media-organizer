@@ -9,7 +9,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 
 🔗 [Vernetze dich auf LinkedIn](https://www.linkedin.com/in/andreas-traut-89340/)
 
-🔗 [Svhaue dir weitere, interessante BI Umsetzunen an](https://github.com/AndreasTraut)
+🔗 [Schaue dir weitere, interessante BI Umsetzunen an](https://github.com/AndreasTraut)
 
 ## 🛠 Tech Stack & Hintergrund
 Als **Senior BI Developer** habe ich dieses Tool entwickelt, um eine robuste "Single Source of Truth" für mein privates Fotoarchiv zu schaffen. 

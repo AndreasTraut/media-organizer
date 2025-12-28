@@ -7,7 +7,9 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 ## Über den Autor
 **Andreas Traut** ist ein Senior BI-Entwickler, der sich auf Data Warehousing, SQL Server und Microsoft BI Stack spezialisiert hat. Dieses Projekt ist ein privates Beispiel dafür, wie KI-gesteuerte Entwicklung und Python reale Herausforderungen bei der Datenorganisation lösen können.
 
-🔗 [Vernetze dich mit mir auf LinkedIn](https://www.linkedin.com/in/andreas-traut-89340/)
+🔗 [Vernetze dich auf LinkedIn](https://www.linkedin.com/in/andreas-traut-89340/)
+
+🔗 [Svhaue dir weitere, interessante BI Umsetzunen an](https://github.com/AndreasTraut)
 
 ## 🛠 Tech Stack & Hintergrund
 Als **Senior BI Developer** habe ich dieses Tool entwickelt, um eine robuste "Single Source of Truth" für mein privates Fotoarchiv zu schaffen. 

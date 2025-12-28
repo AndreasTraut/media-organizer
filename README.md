@@ -15,7 +15,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 Als **Senior BI Developer** habe ich dieses Tool entwickelt, um eine robuste "Single Source of Truth" für mein privates Fotoarchiv zu schaffen. 
 
 - **Sprache:** Python 3.x
-- **Core Library:** [Pillow](https://python-pillow.org/) für EXIF-Metadaten-Parsing.
+- **Core Library:** [Pillow](https://pypi.org/project/pillow/) für EXIF-Metadaten-Parsing.
 - **Infrastruktur:** Optimiert für Windows-Netzwerkpfade zu NAS-Systemen.
 
 ## 🚀 Key Features

@@ -38,6 +38,7 @@ Dieses Projekt enthält keine "KI‑Logik" im Laufzeitcode — das Skript ist be
 - **Schneller Start:** Boilerplate und Vorschläge in Sekunden statt langem Suchen auf Foren.
 - **Modernere Patterns:** Weniger Risiko, veraltete (z. B. Python‑2) Beispiele zu übernehmen.
 - **Konzentration auf Review:** Der Entwickler prüft und verbessert den generierten Code statt alles von Grund auf zu schreiben.
+- **Transferleistung & Training:** Das Projekt dient als "Sandbox", um Prompting-Strategien für den Enterprise-Einsatz zu verfeinern. Triviale Probleme (Fotos sortieren) werden wie professionelle ETL-Prozesse behandelt, um Routinen für Datenqualität und Automatisierung zu schärfen.
 
 Hinweis: KI ist Werkzeug, nicht Ersatz — Review, Tests und Sicherheitsprüfungen bleiben wichtig.
 

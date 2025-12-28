@@ -29,3 +29,5 @@ Als **Senior BI Developer** habe ich dieses Tool entwickelt, um eine robuste "Si
 3. `.env.example` kopieren nach `.env` und Pfade anpassen.
 4. Skript ausführen: `python photo_sort.py`
 
+Weitere Details zur Funktionsweise des Skriptes und eine Zeile-für-Zeile-Erklärung findest du in der separaten Dokumentation: [photo_sort.py — Detaillierte Erklärung](docs/PHOTO_SORT.md).
+

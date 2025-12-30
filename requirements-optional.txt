@@ -1,0 +1,22 @@
+# Optional ML / CV Abhängigkeiten für `photo_insights.py`
+# Installiere nur die Pakete, die du wirklich brauchst; viele davon sind groß
+# und benötigen Build-Tools oder CUDA für GPU-Beschleunigung.
+
+face_recognition
+deepface
+fer
+transformers
+torch
+torchvision
+ftfy
+numpy
+scipy
+opencv-python
+dlib
+# Optionales CLIP (OpenAI) — installierbar per Git-URL
+git+https://github.com/openai/CLIP.git
+
+# RAG-spezifisch (photo_rag.py)
+faiss-cpu  # oder faiss-gpu für CUDA-Unterstützung
+chromadb
+openai  # für LLM-Integration

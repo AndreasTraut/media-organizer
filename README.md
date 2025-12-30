@@ -29,15 +29,38 @@ Als **Senior BI Developer** habe ich dieses Tool entwickelt, um eine robuste "Si
 3. `.env.example` kopieren nach `.env` und Pfade anpassen.
 4. Skript ausführen: `python photo_sort.py`
 
-Weitere Details zur Funktionsweise des Skriptes und eine Zeile-für-Zeile-Erklärung findest du in der separaten Dokumentation: [photo_sort.py — Detaillierte Erklärung](docs/PHOTO_SORT.md).
+➡️ **[Vollständige Dokumentation:  Zeile-für-Zeile-Erklärung des Skriptes photo_sort.py](docs/PHOTO_SORT.md)**
 
 ## 🤖 KI-gestützter Entwicklungsworkflow
 
-Dieses Projekt enthält keine "KI‑Logik" im Laufzeitcode — das Skript ist bewusst leichtgewichtig und nutzt Standardbibliotheken. Der KI‑Aspekt bezieht sich auf den Entwicklungsprozess: Teile des Projektgerüsts, Modernisierungen (z. B. `pathlib` statt veralteter `os`‑Aufrufe), aktuelle Best‑Practices im Error‑Handling und Hilfs‑Boilerplate wurden mithilfe einer KI-Assistenz generiert. Vorteile:
+Dieses Projekt enthält keine "KI‑Logik" im Laufzeitcode (Runtime) — das Skript ist bewusst leichtgewichtig und nutzt Standardbibliotheken. Der KI‑Aspekt bezieht sich auf den Entwicklungsprozess (Developer-Workflow): Teile des Projektgerüsts, Modernisierungen (z. B. `pathlib` statt veralteter `os`‑Aufrufe), aktuelle Best‑Practices im Error‑Handling und Hilfs‑Boilerplate wurden mithilfe einer KI-Assistenz generiert. Vorteile:
 
 - **Schneller Start:** Boilerplate und Vorschläge in Sekunden statt langem Suchen auf Foren.
 - **Modernere Patterns:** Weniger Risiko, veraltete (z. B. Python‑2) Beispiele zu übernehmen.
 - **Konzentration auf Review:** Der Entwickler prüft und verbessert den generierten Code statt alles von Grund auf zu schreiben.
 
 Hinweis: KI ist Werkzeug, nicht Ersatz — Review, Tests und Sicherheitsprüfungen bleiben wichtig.
+
+## 🧠 Photo Intelligence — Erweiterte Analyse-Tools
+
+Neben dem Basis-Sortier-Tool bietet dieses Projekt fortgeschrittene **Photo Intelligence**-Funktionen für unstrukturierte Datenanalyse:
+
+- **Gesichtserkennung & Emotionsanalyse** (`photo_insights.py`)
+- **RAG-basierte semantische Suche** (`photo_rag.py`)
+- **CLIP-Embeddings** für Text-zu-Bild-Queries
+- **LLM-Integration** für natürlichsprachliche Konversation
+
+**Schnellstart:**
+```powershell
+# Index mit Metadaten, Gesichtern, Emotionen erstellen
+python photo_intelligence/photo_insights.py --build-index
+
+# Semantische Suche
+python photo_intelligence/photo_rag.py --query "Strand im Sommer"
+
+# Interaktiver Chat-Modus
+python photo_intelligence/photo_rag.py --chat
+```
+
+➡️ **[Vollständige Dokumentation: Photo Intelligence Tools](docs/PHOTO_INTELLIGENCE.md)**
 

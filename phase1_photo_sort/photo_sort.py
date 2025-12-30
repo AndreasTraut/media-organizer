@@ -1,7 +1,7 @@
 """Photo Organizer - Sortiert Fotos und Videos nach Aufnahmedatum.
 
 Dieses Skript organisiert Mediendateien in Ordner nach dem Format YYYY-MM-DD.
-Für eine detaillierte Dokumentation siehe: docs/PHOTO_SORT.md
+Für eine detaillierte Dokumentation siehe: docs/PHASE1_PHOTO_SORT.md
 """
 
 import os

@@ -27,7 +27,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 
 ## 🌟 Projekt-Evolution: Feedback ist ein Geschenk
 
-### Phase 1: Data Cleaning & Organisation (Dezember 2024)
+### Phase 1: Data Cleaning & Organisation (Dezember 2025)
 
 > 💼 **[LinkedIn Post 1: Data Engineering im Privaten](https://www.linkedin.com/posts/activity-7409246436468576257-6LvU)**  
 > 💾 **Modul:** `phase1_photo_sort/photo_sort.py`  
@@ -64,7 +64,7 @@ Nach der Veröffentlichung erhielt ich folgenden wertvollen Kommentar aus der Co
 
 ---
 
-### Phase 2: Photo Intelligence Suite (Dezember 2024 - Januar 2025)
+### Phase 2: Photo Intelligence Suite (Dezember 2025 - Januar 2026)
 
 > 🚀 **LinkedIn Post 2: Die Evolution zur Intelligence Suite** (coming soon)  
 > 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  

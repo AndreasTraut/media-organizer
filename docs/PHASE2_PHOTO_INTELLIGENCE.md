@@ -1,3 +1,11 @@
+# Phase 2: Photo Intelligence — Detaillierte Erklärung
+
+> 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  
+> 🚀 **LinkedIn Post:** Die Evolution zur Intelligence Suite (coming soon)  
+> 📦 **Feedback-getrieben:** Entwickelt basierend auf Community-Feedback
+
+---
+
 ## 🧭 Unstrukturierte Datenanalyse (`photo_insights.py`)
 
 Als nächster Schritt habe ich ein ergänzendes Tool `photo_insights.py` hinzugefügt, das unstrukturierte Bilddaten analysiert (Gesichts-Detection, Emotionserkennung, Embeddings) — modular und optional, d.h. es nutzt nur die Bibliotheken, die installiert sind.
@@ -6,19 +14,19 @@ Als nächster Schritt habe ich ein ergänzendes Tool `photo_insights.py` hinzuge
 
 ```powershell
 # Nutzt PHOTO_SOURCE aus .env
-python photo_intelligence/photo_insights.py --build-index --out insights_index.json
+python phase2_photo_intelligence/photo_insights.py --build-index --out insights_index.json
 ```
 
 - Bekannte Person suchen (Ordner mit Bildern pro Person):
 
 ```powershell
 # Nutzt KNOWN_FACES_DIR aus .env
-python photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
 ```
 
-- Optionale Abhängigkeiten (schwer, nur bei Bedarf): siehe `requirements-optional.txt`.
+- Optionale Abhängigkeiten (schwer, nur bei Bedarf): siehe `requirements-phase2.txt`.
 
-Hinweis: Einige Bibliotheken (z. B. `dlib`, `torch`) benötigen native Build-Tools oder vorgängige CUDA-Installation für GPU‑Support. Nutze die Datei `requirements-optional.txt`, um gezielt zu installieren.
+Hinweis: Einige Bibliotheken (z. B. `dlib`, `torch`) benötigen native Build-Tools oder vorgängige CUDA-Installation für GPU‑Support. Nutze die Datei `requirements-phase2.txt`, um gezielt zu installieren.
 
 ## 🔍 RAG-basierte Bildsuche (`photo_rag.py`)
 
@@ -28,22 +36,22 @@ Für semantische Text-zu-Bild-Suche und natürlichsprachliche Queries habe ich e
 
 ```powershell
 # Nutzt PHOTO_SOURCE aus .env
-python photo_intelligence/photo_rag.py --build-vector-db
+python phase2_photo_intelligence/photo_rag.py --build-vector-db
 ```
 
 - **Text-basierte Suche**:
 
 ```powershell
-python photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10
+python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10
 ```
 
 - **Interaktiver Chat-Modus** (mit LLM-Integration, benötigt `OPENAI_API_KEY` in `.env`):
 
 ```powershell
-python photo_intelligence/photo_rag.py --chat
+python phase2_photo_intelligence/photo_rag.py --chat
 ```
 
 Beispiel-Queries: *"Zeige mir alle Geburtstagsfotos"*, *"Welche Bilder haben Berge im Hintergrund?"*, *"Finde Fotos von Person X"*.
 
-Benötigte Pakete: `transformers`, `torch`, `faiss-cpu`, optional `openai` (siehe `requirements-optional.txt`).
+Benötigte Pakete: `transformers`, `torch`, `faiss-cpu`, optional `openai` (siehe `requirements-phase2.txt`).
 

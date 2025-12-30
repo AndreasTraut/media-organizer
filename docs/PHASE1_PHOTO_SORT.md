@@ -1,4 +1,10 @@
-## `photo_sort.py` — Detaillierte Erklärung
+# Phase 1: Photo Sort — Detaillierte Erklärung
+
+> 💾 **Modul:** `phase1_photo_sort/photo_sort.py`  
+> 💼 **LinkedIn Post:** [Data Engineering im Privaten](https://www.linkedin.com/posts/activity-7409246436468576257-6LvU)  
+> 📦 **Implementierung:** Siehe [photo_sort.py](../phase1_photo_sort/photo_sort.py)
+
+---
 
 **Überblick:**
 - **Zweck:** Sortiert Fotos und Videos in Zielordner nach Aufnahmedatum (Format `YYYY-MM-DD`).
@@ -48,6 +54,6 @@
 
 **Kurzanleitung (Beispiel):**
 1. `.env.example` nach `.env` kopieren und `PHOTO_SOURCE`/`PHOTO_TARGET` setzen.
-2. Install: `pip install -r requirements.txt`.
-3. Start: `python photo_sort.py`.
+2. Install: `pip install -r requirements-phase1.txt`.
+3. Start: `python phase1_photo_sort/photo_sort.py`.
 

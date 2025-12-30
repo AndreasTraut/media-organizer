@@ -1,7 +1,8 @@
-# Optional ML / CV Abhängigkeiten für `photo_insights.py`
+# Phase 2: Photo Intelligence - ML/CV Abhängigkeiten
 # Installiere nur die Pakete, die du wirklich brauchst; viele davon sind groß
 # und benötigen Build-Tools oder CUDA für GPU-Beschleunigung.
 
+# Für photo_insights.py - Entity-Extraktion & Emotionsanalyse
 face_recognition
 deepface
 fer
@@ -16,7 +17,7 @@ dlib
 # Optionales CLIP (OpenAI) — installierbar per Git-URL
 git+https://github.com/openai/CLIP.git
 
-# RAG-spezifisch (photo_rag.py)
+# Für photo_rag.py - RAG-basierte semantische Suche
 faiss-cpu  # oder faiss-gpu für CUDA-Unterstützung
 chromadb
-openai  # für LLM-Integration
+openai  # für LLM-Integration (GPT-4o)

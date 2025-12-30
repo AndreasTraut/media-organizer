@@ -169,7 +169,7 @@ python phase2_photo_intelligence/photo_insights.py --build-index
 python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer"
 
 # Interaktiver Chat-Modus
-python photo_intelligence/photo_rag.py --chat
+python phase2_photo_intelligence/photo_rag.py --chat
 ```
 
 ➡️ **[🧠 Detaillierte Dokumentation: Phase 2 - Photo Intelligence](docs/PHASE2_PHOTO_INTELLIGENCE.md)**

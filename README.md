@@ -21,8 +21,8 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 
 1. [Projekt-Evolution: Feedback ist ein Geschenk](#-projekt-evolution-feedback-ist-ein-geschenk)
 2. [Projekt-Module](#-projekt-module)
-3. [Installation & Quick Start](#️-installation--quick-start)
-4. [Tech Stack](#-tech-stack)
+3. [Tech Stack](#-tech-stack)
+4. [KI-gestützter Entwicklungsworkflow](#-ki-entwicklingsworkflow)
 ---
 
 ## 🌟 Projekt-Evolution: Feedback ist ein Geschenk
@@ -173,38 +173,6 @@ python phase2_photo_intelligence/photo_rag.py --chat
 ```
 
 ➡️ **[🧠 Detaillierte Dokumentation: Phase 2 - Photo Intelligence](docs/PHASE2_PHOTO_INTELLIGENCE.md)**
-
----
-
-## 🔧 Installation & Quick Start
-
-### Voraussetzungen
-
-- Python 3.8+
-- Git
-- (Optional) CUDA für GPU-beschleunigte Embeddings
-
-### Setup
-
-```bash
-# Repository klonen
-git clone https://github.com/AndreasTraut/media-organizer.git
-cd media-organizer
-
-# Virtual Environment erstellen
-python -m venv .venv
-.venv\Scripts\Activate.ps1  # Windows PowerShell
-
-# Phase 1: Basis-Installation (nur Photo Sort)
-pip install -r requirements-phase1.txt
-
-# Phase 2: Vollständige Installation (inkl. Intelligence-Features)
-pip install -r requirements-phase2.txt
-
-# Konfiguration
-cp .env.example .env
-# Bearbeite .env und setze deine Pfade
-```
 
 ---
 

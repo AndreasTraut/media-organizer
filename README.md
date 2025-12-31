@@ -22,7 +22,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 1. [Projekt-Evolution: Feedback ist ein Geschenk](#-projekt-evolution-feedback-ist-ein-geschenk)
 2. [Projekt-Module](#-projekt-module)
 3. [Tech Stack](#-tech-stack)
-4. [KI-gestützter Entwicklungsworkflow](#-ki-entwicklingsworkflow)
+4. [KI-gestützter Entwicklungsworkflow](#-ki-gestuetzter-entwicklungsworkflow)
 ---
 
 ## 🌟 Projekt-Evolution: Feedback ist ein Geschenk

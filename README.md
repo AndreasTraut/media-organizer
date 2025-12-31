@@ -4,7 +4,7 @@
 
 Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z.B. Google Photos Takeout) in eine strukturierte Ordnerhierarchie auf einem **Synology NAS** und bietet erweiterte KI-basierte Analyse-Tools für semantische Suche, Gesichtserkennung und natürlichsprachliche Interaktion.
 
-![20251223_152623-COLLAGE](https://github.com/user-attachments/assets/131b96d2-a430-4163-baa1-adf2a62677c5)
+![Media-Organizer](https://via.placeholder.com/900x240?text=Media-Organizer)
 
 
 ## 👨‍💻 Über den Autor
@@ -22,7 +22,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 1. [Projekt-Evolution: Feedback ist ein Geschenk](#-projekt-evolution-feedback-ist-ein-geschenk)
 2. [Projekt-Module](#-projekt-module)
 3. [Tech Stack](#-tech-stack)
-4. [KI-gestützter Entwicklungsworkflow](#-ki-entwicklingsworkflow)
+4. [KI-gestützter Entwicklungsworkflow](#-ki-gestuetzter-entwicklungsworkflow)
 ---
 
 ## 🌟 Projekt-Evolution: Feedback ist ein Geschenk

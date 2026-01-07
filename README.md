@@ -114,7 +114,7 @@ python phase1_photo_sort/photo_sort.py
 
 ### 💡 Das Game-Changing Feedback
 
-Nach der Veröffentlichung erhielt ich folgenden wertvollen Kommentar aus der Community:
+Nach der Veröffentlichung erhielt ich [folgenden wertvollen Kommentar aus der Community](https://www.linkedin.com/feed/update/urn:li:activity:7409246436468576257?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7409246436468576257%2C7411139961678131200%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287411139961678131200%2Curn%3Ali%3Aactivity%3A7409246436468576257%29):
 
 > *"Das nächste Level, und vor allem auch im BI Bereich die nächste '**Goldene Schaufel**', ist die **Unstrukturierte Datenanalyse**.*  
 > 

@@ -6,54 +6,193 @@
 
 ---
 
-**Überblick:**
-- **Zweck:** Sortiert Fotos und Videos in Zielordner nach Aufnahmedatum (Format `YYYY-MM-DD`).
-- **Ansatz:** EXIF-First; falls keine EXIF-Daten vorhanden sind, wird das Dateisystem-Änderungsdatum verwendet.
+## 🎯 Überblick
 
-**Wesentliche Komponenten:**
-- **Imports:** `os`, `shutil`, `datetime`, `pathlib.Path`, `Pillow (Image, ExifTags)`, `python-dotenv (load_dotenv)`.
-- **Konfiguration:** Pfade kommen über Umgebungsvariablen `PHOTO_SOURCE` und `PHOTO_TARGET` (z. B. aus einer `.env`).
+**Zweck:** Sortiert Fotos und Videos automatisch nach Aufnahmedatum in eine strukturierte Ordnerhierarchie (`YYYY-MM-DD`).
 
-**Funktionen:**
-- `get_media_date(file_path: Path) -> datetime.date`:
-  - Ziel: Bestimmt das Aufnahmedatum einer Mediendatei.
-  - Schritt 1: Für Bild-Dateiendungen (`.jpg`, `.jpeg`, `.png`, `.tiff`) wird versucht, EXIF-Daten zu lesen.
-    - `Image.open()` öffnet das Bild; `img._getexif()` liefert EXIF-Tags.
-    - Es wird nach dem Tag `DateTimeOriginal` gesucht und bei Erfolg mit `datetime.strptime(..., "%Y:%m:%d %H:%M:%S")` geparst.
-  - Schritt 2 (Fallback): Wenn keine EXIF-Daten vorhanden oder nicht auslesbar sind (z. B. Videos, Collagen, oder beschädigte EXIF), wird `file_path.stat().st_mtime` (letzte Modifikation) verwendet.
-  - Fehlerbehandlung: Ausnahmen beim EXIF-Lesen werden abgefangen und protokolliert, das Fallback wird verwendet.
+**Ansatz:** EXIF-First-Strategie mit intelligentem Fallback auf Dateisystem-Metadaten, wenn keine EXIF-Daten vorhanden sind (z.B. bei Videos oder Collagen).
 
-- `organize_photos(source_dir: str, target_dir: str)`:
-  - Ziel: Verschiebt Dateien aus `source_dir` in Unterordner von `target_dir`, benannt nach Datum `YYYY-MM-DD`.
-  - Ablauf:
-    1. Konvertiert Pfade in `Path`-Objekte (`source`, `target`).
-    2. Prüft, ob die Quelle existiert; falls nicht, Abbruch mit Meldung.
-    3. Iteriert über `source.iterdir()` und verarbeitet nur Files.
-    4. Bestimmt das Datum via `get_media_date()` und erstellt das Zielverzeichnis mit `mkdir(parents=True, exist_ok=True)`.
-    5. Verschiebt die Datei mit `shutil.move()` in den Datumsordner; Fehler beim Verschieben werden protokolliert.
+---
 
-**Programmstart (`if __name__ == "__main__"`):**
-- Liest `PHOTO_SOURCE` und `PHOTO_TARGET` via `os.getenv()` (nach `load_dotenv()`).
-- Wenn beide gesetzt sind, wird `organize_photos(SOURCE, TARGET)` ausgeführt; ansonsten wird der Benutzer gebeten, die `.env` zu konfigurieren.
+## 🧩 Wesentliche Komponenten
 
-**Hinweise & Empfehlungen:**
-- `.env`-Beispiel: Lege `PHOTO_SOURCE` und `PHOTO_TARGET` als absolute Windows-Pfade (z. B. `\\NAS\Fotos\Takeout`) oder lokale Pfade fest.
-- Bei großen Foto-Sammlungen vorher testen — z. B. mit einer Kopie oder einem kleinen Sample-Ordner.
-- Dateikonflikte: `shutil.move()` überschreibt vorhandene Dateien nicht automatisch; bei Namenskonflikten wird eine Exception auftreten. Eine mögliche Erweiterung wäre ein Entkonfliktungsmechanismus (Suffix, Hash-Vergleich, Prompt).
-- Performance: Für sehr viele Dateien kann ein Batch-Processing (z. B. Rekursion + Fortschrittsanzeige, parallele IO-Limits) sinnvoll sein.
+### Libraries
 
-**Mögliche Erweiterungen:**
-- EXIF-Verbesserungen: Berücksichtige weitere Datums-Tags (`DateTime`, `DateTimeDigitized`) oder Zeitzonen-Korrekturen.
-- Videos: Verwende ffprobe/mediainfo zur zuverlässigen Bestimmung des Aufnahmedatums bei Videos.
-- Dry-Run-Option: Flag, das nur simuliert, welche Dateien wohin verschoben würden.
-- Logging: Ersetze `print()` durch ein konfigurierbares `logging` mit Levels und Rotationshandlern.
+- **`pathlib.Path`** – Moderne Pfadverwaltung (statt veralteter `os`-Module)
+- **`Pillow (Image, ExifTags)`** – EXIF-Metadaten-Extraktion aus Bilddateien
+- **`shutil`** – Datei-Operationen (Move, Copy)
+- **`datetime`** – Datums- und Zeitverarbeitung
+- **`python-dotenv`** – Sichere Konfiguration über `.env`-Dateien
 
-**Abhängigkeiten:**
-- `pillow` für EXIF-Auslese
-- `python-dotenv` um `.env` zu laden
+### Konfiguration
 
-**Kurzanleitung (Beispiel):**
-1. `.env.example` nach `.env` kopieren und `PHOTO_SOURCE`/`PHOTO_TARGET` setzen.
-2. Install: `pip install -r requirements-phase1.txt`.
-3. Start: `python phase1_photo_sort/photo_sort.py`.
+Pfade werden über Umgebungsvariablen gesteuert:
+- `PHOTO_SOURCE` – Quellverzeichnis (z.B. Google Photos Takeout)
+- `PHOTO_TARGET` – Zielverzeichnis (z.B. Synology NAS)
+
+Konfiguration erfolgt in `.env`-Datei im Repository-Root.
+
+---
+
+## ⚙️ Funktionen
+
+### 📅 `get_media_date(file_path: Path) -> datetime.date`
+
+**Ziel:** Bestimmt das Aufnahmedatum einer Mediendatei mit Multi-Level-Fallback.
+
+**Ablauf:**
+
+1. **EXIF-Versuch (für Bilder):**
+   - Unterstützte Formate: `.jpg`, `.jpeg`, `.png`, `.tiff`
+   - Öffnet Bild mit `Image.open()` und liest EXIF-Tags via `img._getexif()`
+   - Sucht nach `DateTimeOriginal`-Tag (verlässlichster Zeitstempel)
+   - Parst Datum mit `datetime.strptime(..., "%Y:%m:%d %H:%M:%S")`
+
+2. **Fallback (für Videos/fehlerhafte EXIF):**
+   - Nutzt `file_path.stat().st_mtime` (Dateisystem-Änderungsdatum)
+   - Konvertiert Timestamp in `datetime.date`-Objekt
+
+**Fehlerbehandlung:**
+- Ausnahmen beim EXIF-Lesen werden abgefangen und protokolliert
+- System wechselt automatisch zum Fallback ohne Programmabbruch
+
+---
+
+### 📁 `organize_photos(source_dir: str, target_dir: str)`
+
+**Ziel:** Verschiebt Dateien aus Quellverzeichnis in datumsbasierte Unterordner.
+
+**Ablauf:**
+
+1. **Pfad-Validierung:**
+   - Konvertiert String-Pfade in `Path`-Objekte
+   - Prüft Existenz des Quellverzeichnisses
+   - Bricht mit Fehlermeldung ab, falls Quelle nicht existiert
+
+2. **Datei-Iteration:**
+   - Iteriert über `source.iterdir()` (nur Dateien, keine Ordner)
+   - Filtert Hidden-Files und System-Dateien
+
+3. **Datums-Bestimmung & Verschiebung:**
+   - Ruft `get_media_date()` für jede Datei auf
+   - Erstellt Zielordner `YYYY-MM-DD` mit `mkdir(parents=True, exist_ok=True)`
+   - Verschiebt Datei mit `shutil.move()` in den Datumsordner
+
+**Fehlerbehandlung:**
+- Fehler beim Verschieben werden protokolliert, aber nicht weitergegeben
+- Prozess läuft weiter, auch wenn einzelne Dateien problematisch sind
+
+---
+
+## 🚀 Programmstart
+
+Das Hauptprogramm (`if __name__ == "__main__"`) läuft wie folgt ab:
+
+1. **Umgebungsvariablen laden:**
+   - `load_dotenv()` liest `.env`-Datei ein
+   - `os.getenv()` holt `PHOTO_SOURCE` und `PHOTO_TARGET`
+
+2. **Validierung & Ausführung:**
+   - Prüft, ob beide Variablen gesetzt sind
+   - Startet `organize_photos()` bei erfolgreicher Validierung
+   - Gibt Warnhinweis aus, falls Konfiguration fehlt
+
+---
+
+## 💡 Hinweise & Empfehlungen
+
+### Konfiguration
+
+**`.env`-Beispiel:**
+```plaintext
+PHOTO_SOURCE=C:\Users\andre\Downloads\GooglePhotos_Takeout
+PHOTO_TARGET=\\NAS\Fotos\Sortiert
+```
+
+⚠️ **Wichtig:** Nutze absolute Windows-Pfade oder UNC-Pfade für NAS-Zugriffe.
+
+### Testing
+
+- ✅ **Teste mit Sample-Ordner:** Verwende eine Kopie statt Originaldaten
+- ✅ **Starte mit wenigen Dateien:** Validiere Logik vor großem Batch-Lauf
+- ✅ **Prüfe Zielordner:** Kontrolliere Struktur und Vollständigkeit nach Testlauf
+
+### Performance
+
+- Für sehr große Sammlungen (>50.000 Dateien) kann ein Batch-Processing mit Fortschrittsanzeige sinnvoll sein
+- Parallele Verarbeitung nur bei separaten Zielordnern empfohlen (Race Conditions vermeiden)
+
+### Konflikte
+
+⚠️ `shutil.move()` überschreibt keine existierenden Dateien automatisch. Bei Namenskonflikten tritt eine Exception auf.
+
+**Mögliche Lösungen:**
+- Hash-basierte Duplikat-Erkennung implementieren
+- Suffix-Nummerierung (`_1`, `_2`, etc.)
+- Interaktive Nutzer-Abfrage
+
+---
+
+## 🔧 Installation & Quick Start
+
+### Schritt 1: Abhängigkeiten installieren
+
+```powershell
+# Installiere Phase 1 Requirements
+pip install -r requirements-phase1.txt
+```
+
+### Schritt 2: Konfiguration
+
+```powershell
+# Kopiere .env-Template
+Copy-Item .env.example .env
+
+# Bearbeite .env und setze PHOTO_SOURCE und PHOTO_TARGET
+notepad .env
+```
+
+### Schritt 3: Ausführung
+
+```powershell
+# Starte Photo Sort
+python phase1_photo_sort/photo_sort.py
+```
+
+---
+
+## 🚧 Mögliche Erweiterungen
+
+### EXIF-Verbesserungen
+
+- Berücksichtige weitere Datums-Tags (`DateTime`, `DateTimeDigitized`)
+- Implementiere Zeitzonen-Korrekturen basierend auf GPS-Koordinaten
+- Nutze `OffsetTimeOriginal` für präzise Zeitstempel
+
+### Video-Support
+
+- Integriere `ffprobe` oder `mediainfo` für zuverlässige Video-Metadaten
+- Parse Creation-Time aus MP4-Container-Metadaten
+- Erkenne unterschiedliche Video-Codecs
+
+### Features
+
+- **Dry-Run-Modus:** Flag `--dry-run` für Simulation ohne echte Verschiebung
+- **Progress-Bar:** Integration von `tqdm` für Fortschrittsanzeige
+- **Logging:** Ersetze `print()` durch konfigurierbare `logging`-Module mit Rotation
+
+### Duplikat-Erkennung
+
+- Hash-basierter Vergleich (MD5/SHA256)
+- Pixel-basierte Ähnlichkeitssuche
+- EXIF-basierte Deduplication
+
+---
+
+## 📦 Abhängigkeiten
+
+- **`pillow`** – EXIF-Metadaten-Auslese
+- **`python-dotenv`** – Umgebungsvariablen-Management
+
+Vollständige Liste siehe [requirements-phase1.txt](../requirements-phase1.txt)
 

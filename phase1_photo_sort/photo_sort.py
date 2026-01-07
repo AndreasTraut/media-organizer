@@ -2,7 +2,7 @@
 
 Dieses Skript organisiert Mediendateien in Ordner nach dem Format YYYY-MM-DD.
 Für eine detaillierte Dokumentation siehe: docs/PHASE1_PHOTO_SORT.md
-"""
+""" 
 
 import os
 import shutil

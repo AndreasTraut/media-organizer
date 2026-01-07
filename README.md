@@ -21,13 +21,13 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 
 1. [Projekt-Evolution: Feedback ist ein Geschenk](#-projekt-evolution-feedback-ist-ein-geschenk)
 2. [Projekt-Module](#-projekt-module)
-3. [Installation & Quick Start](#️-installation--quick-start)
-4. [Tech Stack](#-tech-stack)
+3. [Tech Stack](#-tech-stack)
+4. [KI-gestützter Entwicklungsworkflow](#-ki-gestuetzter-entwicklungsworkflow)
 ---
 
 ## 🌟 Projekt-Evolution: Feedback ist ein Geschenk
 
-### Phase 1: Data Cleaning & Organisation (Dezember 2024)
+### Phase 1: Data Cleaning & Organisation (Dezember 2025)
 
 > 💼 **[LinkedIn Post 1: Data Engineering im Privaten](https://www.linkedin.com/posts/activity-7409246436468576257-6LvU)**  
 > 💾 **Modul:** `phase1_photo_sort/photo_sort.py`  
@@ -64,7 +64,7 @@ Nach der Veröffentlichung erhielt ich folgenden wertvollen Kommentar aus der Co
 
 ---
 
-### Phase 2: Photo Intelligence Suite (Dezember 2024 - Januar 2025)
+### Phase 2: Photo Intelligence Suite (Dezember 2025 - Januar 2026)
 
 > 🚀 **LinkedIn Post 2: Die Evolution zur Intelligence Suite** (coming soon)  
 > 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  
@@ -169,42 +169,10 @@ python phase2_photo_intelligence/photo_insights.py --build-index
 python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer"
 
 # Interaktiver Chat-Modus
-python photo_intelligence/photo_rag.py --chat
+python phase2_photo_intelligence/photo_rag.py --chat
 ```
 
 ➡️ **[🧠 Detaillierte Dokumentation: Phase 2 - Photo Intelligence](docs/PHASE2_PHOTO_INTELLIGENCE.md)**
-
----
-
-## 🔧 Installation & Quick Start
-
-### Voraussetzungen
-
-- Python 3.8+
-- Git
-- (Optional) CUDA für GPU-beschleunigte Embeddings
-
-### Setup
-
-```bash
-# Repository klonen
-git clone https://github.com/AndreasTraut/media-organizer.git
-cd media-organizer
-
-# Virtual Environment erstellen
-python -m venv .venv
-.venv\Scripts\Activate.ps1  # Windows PowerShell
-
-# Phase 1: Basis-Installation (nur Photo Sort)
-pip install -r requirements-phase1.txt
-
-# Phase 2: Vollständige Installation (inkl. Intelligence-Features)
-pip install -r requirements-phase2.txt
-
-# Konfiguration
-cp .env.example .env
-# Bearbeite .env und setze deine Pfade
-```
 
 ---
 

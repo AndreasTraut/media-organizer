@@ -126,6 +126,8 @@ Nach der Veröffentlichung erhielt ich [folgenden wertvollen Kommentar aus der C
 >
 > *Du hast jetzt mit der Repo einmal die Basis von Data Cleaning. Die KI unterstützt dich im Workflow. Du hast alles, was du dafür brauchst! Viel Spaß!"*
 
+<img width="535" height="564" alt="Kommentar aus der Community" src="https://github.com/user-attachments/assets/e52b0f4d-7ece-4765-b6a3-52eecf2c0a83" />     
+
 **Challenge accepted! 🚀**
 
 ---

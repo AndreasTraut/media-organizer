@@ -37,13 +37,18 @@ In meiner täglichen Arbeit als BI-Entwickler beschleunigt KI das Prototyping vo
 
 In **Phase 1** (`phase1_photo_sort/photo_sort.py`) wurde GitHub Copilot eingesetzt, um den Entwicklungsprozess zu beschleunigen: Modernisierte Code-Patterns, Best-Practices im Error-Handling und Boilerplate-Code entstanden in Sekunden statt Stunden. Das Skript selbst bleibt bewusst leichtgewichtig und nutzt nur Standardbibliotheken – KI wirkt hier ausschließlich als Entwicklungsassistent, nicht zur Laufzeit.
 
-➡️ **Details siehe:** [Phase 1 in Projekt-Evolution](#phase-1-data-cleaning--organisation-dezember-2025)
+> ➡️ **Details siehe:** [Phase 1 in Projekt-Evolution](#phase-1-data-cleaning--organisation-dezember-2025)  
+> 💼 **[LinkedIn Post 1: Data Engineering im Privaten](https://www.linkedin.com/posts/activity-7409246436468576257-6LvU)**  
+> 💾 **Modul:** `phase1_photo_sort/photo_sort.py`  
 
 ### Phase 2: Runtime — KI für intelligente Datenanalyse
 
 **Phase 2** (`phase2_photo_intelligence/`) markiert den Paradigmenwechsel: Hier wird KI **zur Laufzeit** eingesetzt. CLIP-Embeddings ermöglichen semantische Bildsuche, DeepFace und FER analysieren Gesichter und Emotionen, GPT-4o versteht natürlichsprachliche Queries, und FAISS orchestriert die Vector-Suche über 12.000+ Fotos. Die Evolution ist komplett: Von "KI hilft beim Programmieren" zu "KI analysiert meine Daten zur Laufzeit".
 
-➡️ **Details siehe:** [Phase 2 in Projekt-Evolution](#phase-2-photo-intelligence-suite-dezember-2025---januar-2026)
+> ➡️ **Details siehe:** [Phase 2 in Projekt-Evolution](#phase-2-photo-intelligence-suite-dezember-2025---januar-2026)  
+> 🚀 **LinkedIn Post 2: Die Evolution zur Intelligence Suite** (coming soon)  
+> 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  
+
 
 ### Die Philosophie
 

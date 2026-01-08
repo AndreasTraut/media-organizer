@@ -76,8 +76,9 @@ python phase2_photo_intelligence/photo_insights.py --build-index --out insights_
 **Ablauf:**
 
 1. **Bild-Iteration:**
-   - Durchsucht rekursiv `PHOTO_SOURCE`
+   - Durchsucht rekursiv `PHOTO_SOURCE` mit `rglob('*')`
    - Filtert Bildformate (`.jpg`, `.jpeg`, `.png`)
+   - ✅ **Vollständig kompatibel mit Phase 1 Ordnerstruktur:** Funktioniert problemlos mit sortierten Unterordnern (z.B. `2025-10-30/`, `2025-10-31/`, etc.)
 
 2. **Gesichtserkennung (DeepFace):**
    - Erkennt alle Gesichter im Bild
@@ -99,18 +100,27 @@ python phase2_photo_intelligence/photo_insights.py --build-index --out insights_
 
 ### 🔍 Personensuche
 
-**Befehl:**
+**Befehl (drei Varianten):**
 ```powershell
-# Findet alle Bilder mit bekannten Personen
+# Variante 1: Verwendet KNOWN_FACES_DIR aus .env automatisch
 python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
+
+# Variante 2: Mit explizitem Pfad zu bekannten Gesichtern
+python phase2_photo_intelligence/photo_insights.py --find-person C:\Fotos\KnownFaces --index-path insights_index.json
+
+# Variante 3: Nur --find-person Flag (nutzt .env Konfiguration)
+python phase2_photo_intelligence/photo_insights.py --find-person
 ```
 
 **Ablauf:**
 
 1. Lädt vorhandenen Index aus `insights_index.json`
-2. Durchsucht Face-Embeddings nach Übereinstimmungen
-3. Nutzt Cosine-Similarity für Gesichtsvergleich
-4. Gibt gefilterte Liste mit Pfaden und Konfidenz-Scores zurück
+2. Lädt Referenz-Gesichter aus `KNOWN_FACES_DIR` (oder angegebenem Pfad)
+3. Durchsucht Face-Embeddings nach Übereinstimmungen
+4. Nutzt Cosine-Similarity für Gesichtsvergleich
+5. Gibt gefilterte Liste mit Pfaden und Konfidenz-Scores zurück
+
+**Hinweis:** Stelle sicher, dass `KNOWN_FACES_DIR` in `.env` gesetzt ist oder übergebe den Pfad explizit.
 
 ---
 
@@ -231,6 +241,39 @@ pip install -r requirements-phase2.txt
 notepad .env
 ```
 
+### Windows: Option A — `dlib` / `face_recognition` (vorinstallierte Wheel-Datei)
+
+Wenn Sie `face_recognition` (dlib) unter Windows verwenden möchten, gibt es zwei praktikable Wege:
+
+- 1) Schnelltest (kann fehlschlagen, wenn kein CMake/Build-Tool installiert ist):
+
+```powershell
+# In der venv ausführen
+&C:/Users/andre/myDockerRepositories/media-organizer/.venv/Scripts/python.exe -m pip install face_recognition
+```
+
+- 2) Falls der obige Befehl fehlschlägt (häufige Ursache: fehlendes `cmake` oder Visual Studio Build Tools), laden Sie ein vorgefertigtes Wheel herunter und installieren es manuell:
+
+1. Öffnen Sie die Unofficial Windows Binaries Seite von Christoph Gohlke: https://www.lfd.uci.edu/~gohlke/pythonlibs/
+2. Laden Sie das passende `dlib`-Wheel für Ihre Python-Version (z.B. `dlib-19.24.0-cp39-cp39-win_amd64.whl` für CPython 3.9 64-bit) herunter.
+3. Installieren Sie das Wheel in Ihrer venv:
+
+```powershell
+# Beispiel: passen Sie den Pfad zur heruntergeladenen Wheel-Datei an
+&C:/Users/andre/myDockerRepositories/media-organizer/.venv/Scripts/python.exe -m pip install C:\path\to\dlib-19.24.0-cp39-cp39-win_amd64.whl
+# Danach installiere face_recognition (falls noch nicht installiert)
+&C:/Users/andre/myDockerRepositories/media-organizer/.venv/Scripts/python.exe -m pip install face_recognition
+```
+
+Hinweis: Alternativ können Sie - falls Sie Build-Tools bevorzugen - `cmake` und die Visual Studio Build Tools installieren und erneut `pip install face_recognition` ausführen. Auf Windows ist das jedoch deutlich aufwändiger.
+
+Aktueller Stand (Versuch durch die Assistenz): Ich habe versucht, `face_recognition` automatisch in der Projekt-venv zu installieren. Der automatische Build schlug fehl mit einer Fehlermeldung, die auf fehlendes `cmake` hinwies. Deshalb empfehle ich den Weg über ein vorgefertigtes Wheel (Variante 2) oder das manuelle Installieren von `cmake` + Build-Tools.
+
+Wenn Sie möchten, kann ich:
+- automatisiert versuchen, das richtige Wheel von Gohlkes Seite herunterzuladen und zu installieren, oder
+- alternativ `photo_insights.py` so erweitern, dass es ohne `face_recognition` zuverlässig mit `DeepFace` arbeitet (Fallback-Strategie).
+
+
 **Minimale Konfiguration:**
 ```plaintext
 PHOTO_SOURCE=C:\Fotos\Sortiert
@@ -242,7 +285,14 @@ OPENAI_API_KEY=sk-...  # Optional für Chat-Modus
 
 ```powershell
 # Schritt A: Insights-Index erstellen
+# Schritt A: Insights-Index erstellen (voller Rebuild)
 python phase2_photo_intelligence/photo_insights.py --build-index --out insights_index.json
+
+# Variante: Inkrementelles Indexing — nur neue oder geänderte Dateien verarbeiten
+python phase2_photo_intelligence/photo_insights.py --build-index --incremental --out insights_index.json
+
+# Variante: Vollständige Embeddings im JSON speichern (sehr große Datei)
+python phase2_photo_intelligence/photo_insights.py --build-index --store-embeddings --out insights_index_with_embeddings.json
 
 # Schritt B: Vector-DB erstellen
 python phase2_photo_intelligence/photo_rag.py --build-vector-db
@@ -275,10 +325,71 @@ python phase2_photo_intelligence/photo_rag.py --chat
 
 ### Bekannte Personen hinzufügen
 
-1. Erstelle Ordner pro Person: `C:\Fotos\KnownFaces\Andreas\`
-2. Füge 3-5 verschiedene Fotos der Person hinzu
-3. DeepFace erstellt automatisch Face-Embeddings
-4. Index neu aufbauen mit `--build-index`
+**Schritt 1: Ordnerstruktur erstellen**
+
+```powershell
+# Erstelle Unterordner pro Person im knownFaces-Verzeichnis
+New-Item -Path "knownFaces\Andreas" -ItemType Directory
+New-Item -Path "knownFaces\Maria" -ItemType Directory
+New-Item -Path "knownFaces\Familie" -ItemType Directory
+```
+
+**Schritt 2: Referenzbilder hinzufügen**
+
+Kopiere 3-5 verschiedene Fotos jeder Person in den jeweiligen Ordner:
+
+```
+knownFaces/
+  ├── Andreas/
+  │   ├── portrait1.jpg
+  │   ├── portrait2.jpg
+  │   └── portrait3.jpg
+  ├── Maria/
+  │   ├── maria_01.jpg
+  │   └── maria_02.jpg
+  └── Familie/
+      └── gruppe.jpg
+```
+
+**Wichtige Hinweise für Referenzbilder:**
+- ✅ **Verschiedene Blickwinkel** verwenden (Frontal, Seitlich, etc.)
+- ✅ **Gute Beleuchtung** und hohe Bildqualität
+- ✅ **Gesicht deutlich erkennbar** (nicht zu klein im Bild)
+- ✅ **Verschiedene Kontexte** (Indoor, Outdoor, verschiedene Jahre)
+- ❌ **Keine Gruppenfotos** für Referenzen (nur die zu suchende Person sollte zu sehen sein)
+- ❌ **Keine stark bearbeiteten** Bilder oder Selfies mit Filtern
+
+**Schritt 3: Personensuche ausführen**
+
+```powershell
+# DeepFace analysiert automatisch die Referenzbilder und sucht im Index
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
+```
+
+### Fallback-Verhalten (Windows-freundlich)
+
+`photo_insights.py` versucht standardmäßig `face_recognition` (dlib). Wenn `face_recognition` nicht installiert oder das Build nicht möglich ist, nutzt das Script automatisch `DeepFace` als Fallback für Face-Detektion und Embeddings.
+
+- Vorteile: kein Build-Tool (Visual Studio/CMake) nötig; funktioniert auf Windows ohne weitere System-Tools.
+- Verhalten: Felder im Index bleiben identisch strukturiert — `faces.encodings` enthält Embeddings, `faces.locations` kann `null` sein, wenn die Fallback-Route verwendet wurde.
+
+Wenn du `face_recognition` manuell installiert hast, wird es bevorzugt (liefert zusätzlich lokale Face-Locations). Andernfalls genügt `DeepFace` (berechnet Face-Embeddings zuverlässig).
+
+
+**Erwartetes Ergebnis:**
+```json
+{
+  "Andreas": [
+    "C:\\Fotos\\Sorted\\2024-12-25\\IMG_001.jpg",
+    "C:\\Fotos\\Sorted\\2024-11-10\\IMG_042.jpg"
+  ],
+  "Maria": [
+    "C:\\Fotos\\Sorted\\2024-10-30\\IMG_089.jpg"
+  ]
+}
+```
+
+⚠️ **Hinweis:** Leeres `knownFaces`-Verzeichnis führt zu keinen Ergebnissen. Mindestens eine Person mit Referenzbildern muss vorhanden sein.
 
 ### Datenschutz
 

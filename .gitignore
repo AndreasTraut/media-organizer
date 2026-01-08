@@ -18,3 +18,10 @@ Thumbs.db
 # Lokale Daten (Falls du Testbilder im Ordner hast)
 tmp/
 *.log
+
+# Phase 2: Generierte Index- und Vector-DB-Dateien (Personenbezogene Daten)
+insights_index.json
+vector_db.index
+image_paths.json
+*.index
+*.faiss

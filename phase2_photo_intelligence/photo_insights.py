@@ -22,6 +22,9 @@ import json
 from pathlib import Path
 from datetime import datetime
 from PIL import Image
+import sys
+import numpy as np
+import tempfile
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -87,19 +90,61 @@ def get_exif_date(path: Path):
 
 
 def get_face_data(path: Path):
-    """Return face locations and encodings if face_recognition available."""
-    if not HAS_FACE_RECOG:
-        return None
-    try:
-        img = face_recognition.load_image_file(str(path))
-        locations = face_recognition.face_locations(img)
-        encodings = face_recognition.face_encodings(img, locations)
-        return {
-            "locations": locations,
-            "encodings": [enc.tolist() for enc in encodings]
-        }
-    except Exception:
-        return None
+    """Return face locations and encodings.
+
+    - Use `face_recognition` if available (gives locations + encodings)
+    - Otherwise fall back to `DeepFace.represent()` to obtain face embeddings
+      (locations may be omitted).
+    """
+    # Preferred backend: face_recognition
+    if HAS_FACE_RECOG:
+        try:
+            img = face_recognition.load_image_file(str(path))
+            locations = face_recognition.face_locations(img)
+            encodings = face_recognition.face_encodings(img, locations)
+            return {
+                "locations": locations,
+                "encodings": [enc.tolist() for enc in encodings]
+            }
+        except Exception:
+            # fallback to deepface below
+            pass
+
+    # Fallback: DeepFace (returns embeddings; detection handled internally)
+    if HAS_DEEPFACE:
+        try:
+            # DeepFace.represent may return a list of embeddings or a single vector
+            # depending on version; try to call it and normalize output
+            reps = None
+            try:
+                reps = DeepFace.represent(str(path), enforce_detection=False)
+            except TypeError:
+                # older/newer API variations: try with kwargs
+                reps = DeepFace.represent(str(path), model_name='Facenet', detector_backend='mtcnn', enforce_detection=False)
+
+            # reps can be a list of lists, or a single list
+            encs = []
+            if isinstance(reps, list):
+                # If elements are dicts with 'embedding', extract
+                if reps and isinstance(reps[0], dict) and 'embedding' in reps[0]:
+                    for r in reps:
+                        encs.append(r['embedding'])
+                else:
+                    # assume list of numeric lists
+                    for r in reps:
+                        if isinstance(r, (list, tuple)):
+                            encs.append(list(r))
+            elif isinstance(reps, dict) and 'embedding' in reps:
+                encs.append(reps['embedding'])
+            elif isinstance(reps, (list, tuple)):
+                encs.append(list(reps))
+
+            if encs:
+                return {"locations": None, "encodings": encs}
+        except Exception:
+            pass
+
+    return None
 
 
 def get_emotions(path: Path):
@@ -166,6 +211,30 @@ def get_embedding(path: Path, model_cache={}):
         return None
 
 
+def _make_serializable(obj):
+    """Recursively convert numpy/torch types to native Python types for JSON."""
+    # lazy import torch to avoid hard dependency
+    try:
+        import torch as _torch
+    except Exception:
+        _torch = None
+
+    if isinstance(obj, dict):
+        return {k: _make_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_make_serializable(v) for v in obj]
+    # numpy array -> list
+    if isinstance(obj, np.ndarray):
+        return _make_serializable(obj.tolist())
+    # numpy scalar
+    if isinstance(obj, (np.floating, np.integer, np.bool_)):
+        return obj.item()
+    # torch tensor
+    if _torch is not None and isinstance(obj, _torch.Tensor):
+        return _make_serializable(obj.cpu().numpy())
+    return obj
+
+
 def build_index(source_dir: str, out_file: str = 'insights_index.json'):
     source = Path(source_dir)
     if not source.exists():
@@ -185,11 +254,72 @@ def build_index(source_dir: str, out_file: str = 'insights_index.json'):
             if emb:
                 item['embedding_len'] = len(emb)
                 # don't store full vectors by default to keep file small; store file for optional later use
-            index[str(p)] = item
+            # ensure all values are JSON-serializable (convert numpy/torch types)
+            index[str(p)] = _make_serializable(item)
             print(f"Indexed: {p}")
-    with open(out_file, 'w', encoding='utf-8') as f:
+
+    # Write atomically to avoid corrupt/partial files on interruption
+    tmp_path = Path(f"{out_file}.tmp")
+    with open(tmp_path, 'w', encoding='utf-8') as f:
         json.dump(index, f, ensure_ascii=False, indent=2)
+    # replace atomically
+    try:
+        tmp_path.replace(Path(out_file))
+    except Exception:
+        # fallback: write directly
+        with open(out_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
     print(f"Index written to {out_file} ({len(index)} items)")
+
+
+def build_index_incremental(source_dir: str, out_file: str = 'insights_index.json', store_embeddings: bool = False):
+    """Incremental index build: only process new or modified files.
+    Stores `_mtime` for change detection. If `store_embeddings` is True,
+    the full embedding vector will be stored under `embedding`.
+    """
+    source = Path(source_dir)
+    if not source.exists():
+        print(f"Quelle nicht gefunden: {source}")
+        return
+
+    existing = load_index(out_file) if Path(out_file).exists() else {}
+    index = existing.copy()
+
+    for p in source.rglob('*'):
+        if p.is_file() and p.suffix.lower() in ['.jpg', '.jpeg', '.png', '.tiff', '.mp4', '.mov']:
+            key = str(p)
+            mtime = p.stat().st_mtime
+            prev = existing.get(key)
+            if prev and prev.get('_mtime') == mtime:
+                # unchanged
+                continue
+
+            item = {'path': key, 'date': get_exif_date(p), '_mtime': mtime}
+            face = get_face_data(p)
+            if face:
+                item['faces'] = face
+            emotions = get_emotions(p)
+            if emotions:
+                item['emotions'] = emotions
+            emb = get_embedding(p)
+            if emb:
+                item['embedding_len'] = len(emb)
+                if store_embeddings:
+                    item['embedding'] = emb
+
+            index[key] = _make_serializable(item)
+            print(f"Indexed (inc): {p}")
+
+    # atomic write
+    tmp_path = Path(f"{out_file}.tmp")
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        json.dump(index, f, ensure_ascii=False, indent=2)
+    try:
+        tmp_path.replace(Path(out_file))
+    except Exception:
+        with open(out_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
+    print(f"Incremental index written to {out_file} ({len(index)} items)")
 
 
 def load_index(path='insights_index.json'):
@@ -199,32 +329,74 @@ def load_index(path='insights_index.json'):
 
 
 def find_images_with_person(index_path='insights_index.json', known_face_dir=None, threshold=0.5):
-    if not HAS_FACE_RECOG:
-        print('face_recognition nicht installiert; cannot perform face matching')
-        return []
     index = load_index(index_path)
     known_encodings = []
     known_names = []
+
+    # Build known encodings list using available backend
     if known_face_dir:
         kd = Path(known_face_dir)
         for k in kd.iterdir():
             if k.is_file():
-                img = face_recognition.load_image_file(str(k))
-                encs = face_recognition.face_encodings(img)
-                if encs:
-                    known_encodings.append(encs[0])
-                    known_names.append(k.stem)
+                try:
+                    if HAS_FACE_RECOG:
+                        img = face_recognition.load_image_file(str(k))
+                        encs = face_recognition.face_encodings(img)
+                        if encs:
+                            known_encodings.append(__list_to_numpy(encs[0]))
+                            known_names.append(k.stem)
+                    elif HAS_DEEPFACE:
+                        reps = None
+                        try:
+                            reps = DeepFace.represent(str(k), enforce_detection=False)
+                        except TypeError:
+                            reps = DeepFace.represent(str(k), model_name='Facenet', detector_backend='mtcnn', enforce_detection=False)
+                        if reps:
+                            # reps may be list or single; normalize
+                            if isinstance(reps, dict) and 'embedding' in reps:
+                                known_encodings.append(__list_to_numpy(reps['embedding']))
+                                known_names.append(k.stem)
+                            elif isinstance(reps, list):
+                                # pick first embedding if multiple
+                                first = reps[0]
+                                if isinstance(first, dict) and 'embedding' in first:
+                                    known_encodings.append(__list_to_numpy(first['embedding']))
+                                    known_names.append(k.stem)
+                                elif isinstance(first, (list, tuple)):
+                                    known_encodings.append(__list_to_numpy(first))
+                                    known_names.append(k.stem)
+                except Exception:
+                    continue
+
     results = {}
+
+    # Helper: cosine similarity
+    def cos_sim(a, b):
+        import numpy as _np
+        a = _np.array(a, dtype=_np.float32)
+        b = _np.array(b, dtype=_np.float32)
+        if a.size == 0 or b.size == 0:
+            return 0.0
+        na = a / ( _np.linalg.norm(a) + 1e-10)
+        nb = b / ( _np.linalg.norm(b) + 1e-10)
+        return float(_np.dot(na, nb))
+
     for path, item in index.items():
         faces = item.get('faces')
         if not faces:
             continue
-        encodings = [__list_to_numpy(e) for e in faces.get('encodings', [])]
-        for i, enc in enumerate(encodings):
-            matches = face_recognition.compare_faces(known_encodings, enc, tolerance=threshold)
-            for mi, m in enumerate(matches):
-                if m:
-                    results.setdefault(known_names[mi], []).append(path)
+        encodings = faces.get('encodings', [])
+        for enc in encodings:
+            target = __list_to_numpy(enc)
+            for ki, known in enumerate(known_encodings):
+                try:
+                    score = cos_sim(known, target)
+                    # similarity threshold: convert to similarity (0..1)
+                    if score >= threshold:
+                        results.setdefault(known_names[ki], []).append(path)
+                except Exception:
+                    continue
+
     return results
 
 
@@ -239,7 +411,9 @@ if __name__ == '__main__':
     parser.add_argument('--build-index', action='store_true')
     parser.add_argument('--source', type=str, default=SOURCE)
     parser.add_argument('--out', type=str, default='insights_index.json')
-    parser.add_argument('--find-person', type=str, default=KNOWN_FACES, help='Folder with known faces to search for')
+    parser.add_argument('--incremental', action='store_true', help='Only index new or modified files')
+    parser.add_argument('--store-embeddings', action='store_true', help='Store full embedding vectors in the JSON index')
+    parser.add_argument('--find-person', type=str, nargs='?', const=KNOWN_FACES, default=None, help='Folder with known faces to search for (uses KNOWN_FACES_DIR from .env if not specified)')
     parser.add_argument('--index-path', type=str, default='insights_index.json')
     args = parser.parse_args()
 
@@ -247,9 +421,45 @@ if __name__ == '__main__':
         if not args.source:
             print('Set PHOTO_SOURCE or pass --source')
         else:
-            build_index(args.source, out_file=args.out)
-    elif args.find_person:
-        res = find_images_with_person(index_path=args.index_path, known_face_dir=args.find_person)
-        print(json.dumps(res, indent=2, ensure_ascii=False))
+            if args.incremental:
+                build_index_incremental(args.source, out_file=args.out, store_embeddings=args.store_embeddings)
+            else:
+                # if user requests full embedding storage, temporarily store embeddings in items
+                if args.store_embeddings:
+                    # call non-incremental builder but include embeddings
+                    source = Path(args.source)
+                    index = {}
+                    for p in source.rglob('*'):
+                        if p.is_file() and p.suffix.lower() in ['.jpg', '.jpeg', '.png', '.tiff', '.mp4', '.mov']:
+                            item = {'path': str(p), 'date': get_exif_date(p)}
+                            face = get_face_data(p)
+                            if face:
+                                item['faces'] = face
+                            emotions = get_emotions(p)
+                            if emotions:
+                                item['emotions'] = emotions
+                            emb = get_embedding(p)
+                            if emb:
+                                item['embedding_len'] = len(emb)
+                                item['embedding'] = emb
+                            index[str(p)] = _make_serializable(item)
+                            print(f"Indexed: {p}")
+                    tmp_path = Path(f"{args.out}.tmp")
+                    with open(tmp_path, 'w', encoding='utf-8') as f:
+                        json.dump(index, f, ensure_ascii=False, indent=2)
+                    try:
+                        tmp_path.replace(Path(args.out))
+                    except Exception:
+                        with open(args.out, 'w', encoding='utf-8') as f:
+                            json.dump(index, f, ensure_ascii=False, indent=2)
+                    print(f"Index written to {args.out} ({len(index)} items)")
+                else:
+                    build_index(args.source, out_file=args.out)
+    elif args.find_person is not None:
+        if not args.find_person:
+            print('Error: KNOWN_FACES_DIR not set in .env and no path provided via --find-person')
+        else:
+            res = find_images_with_person(index_path=args.index_path, known_face_dir=args.find_person)
+            print(json.dumps(res, indent=2, ensure_ascii=False))
     else:
         parser.print_help()

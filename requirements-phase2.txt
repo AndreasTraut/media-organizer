@@ -12,7 +12,8 @@ Pillow
 # HINWEIS: face_recognition und dlib benötigen C++ Build-Tools auf Windows
 # Nutze stattdessen DeepFace (hat integrierte Face Detection)
 deepface
-fer
+tf-keras  # Erforderlich für DeepFace mit TensorFlow 2.20+
+fer==22.5.1  # Version 25.x hat Import-Probleme, 22.5.1 ist stabil
 transformers
 torch
 torchvision

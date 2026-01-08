@@ -20,8 +20,17 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 ## 📋 Inhaltsverzeichnis
 
 1. [KI-gestützter Entwicklungsworkflow](#-ki-gestützter-entwicklungsworkflow)
+   - [Zwei Ebenen der KI-Integration](#zwei-ebenen-der-ki-integration)
+   - [Phase 1: Development-Time — KI als Entwicklungs-Werkzeug](#phase-1-development-time--ki-als-entwicklungs-werkzeug)
+   - [Phase 2: Runtime — KI für intelligente Datenanalyse](#phase-2-runtime--ki-für-intelligente-datenanalyse)
+   - [Die Philosophie](#die-philosophie)
 2. [Projekt-Evolution: Feedback ist ein Geschenk](#-projekt-evolution-feedback-ist-ein-geschenk)
+   - [Phase 1: Data Cleaning & Organisation (Dezember 2025)](#phase-1-data-cleaning--organisation-dezember-2025)
+   - [Das Game-Changing Feedback](#-das-game-changing-feedback)
+   - [Phase 2: Photo Intelligence Suite (Dezember 2025 - Januar 2026)](#phase-2-photo-intelligence-suite-dezember-2025---januar-2026)
 3. [Tech Stack](#-tech-stack)
+   - [Phase 1: Basis-Module (Photo Sort)](#phase-1-basis-module-photo-sort)
+   - [Phase 2: Intelligence-Module (Photo Intelligence)](#phase-2-intelligence-module-photo-intelligence)
 
 ---
 
@@ -169,7 +178,6 @@ Die Intelligence-Module nutzen KI **zur Laufzeit** für unstrukturierte Datenana
 - **CLIP-Embeddings** ermöglichen Suche nach Inhalten statt nur Metadaten
 - **FAISS Vector-DB** für schnelle Ähnlichkeitssuche in großen Sammlungen
 - **Beispiel-Query:** *"Strand im Sommer"* → System findet passende Bilder ohne explizite Tags
-- *# 🧠 Was ist neu?
 
 **🔍 Semantische Suche (RAG-basiert) — `phase2_photo_intelligence/photo_rag.py`**
 
@@ -215,14 +223,14 @@ python phase2_photo_intelligence/photo_rag.py --chat
 
 ## 🛠 Tech Stack
 
-### Basis-Module (Photo Sort)
+### Phase 1: Basis-Module (Photo Sort)
 
 - **Sprache:** Python 3.x
 - **Core Library:** [Pillow](https://pypi.org/project/pillow/) für EXIF-Metadaten-Parsing
 - **Konfiguration:** python-dotenv für sichere Pfadverwaltung
 - **Infrastruktur:** Optimiert für Windows-Netzwerkpfade zu NAS-Systemen (Synology)
 
-### Intelligence-Module (Photo Intelligence)
+### Phase 2: Intelligence-Module (Photo Intelligence)
 
 - **CLIP-Embeddings:** OpenAI CLIP für semantische Bild-Text-Zuordnung
 - **Vector Database:** FAISS für effiziente Ähnlichkeitssuche

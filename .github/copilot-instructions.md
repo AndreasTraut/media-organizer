@@ -14,8 +14,15 @@ Diese Datei definiert projektspezifische Regeln für die Erstellung und Pflege v
 
 - **Phasen-Dokumentation:** `docs/PHASE{N}_{BESCHREIBUNG}.md`
   - Format: `PHASE` + Nummer + Unterstrich + Beschreibung in Großbuchstaben
-  - Beispiele: `PHASE1_PHOTO_SORT.md`, `PHASE2_PHOTO_INTELLIGENCE.md`
+  - **WICHTIG:** ALLE Dokumentationen MÜSSEN eindeutig einer Phase zugeordnet werden
+  - Präfix `PHASE1_` für Phase 1 Dokumentation (Photo Sort)
+  - Präfix `PHASE2_` für Phase 2 Dokumentation (Photo Intelligence)
+  - Beispiele: 
+    - `PHASE1_PHOTO_SORT.md` — Hauptdokumentation Phase 1
+    - `PHASE2_PHOTO_INTELLIGENCE.md` — Hauptdokumentation Phase 2
+    - `PHASE2_INSTALLATION.md` — Installation für Phase 2 Dependencies
   - Speicherort: Immer im `docs/` Verzeichnis
+  - **Keine generischen Namen** wie `INSTALLATION.md` oder `USAGE.md` — immer mit Phase-Präfix!
 
 - **Code-Module:** `phase{n}_{beschreibung}/`
   - Format: `phase` + Nummer + Unterstrich + Beschreibung in Kleinbuchstaben
@@ -47,11 +54,18 @@ Diese Datei definiert projektspezifische Regeln für die Erstellung und Pflege v
    ```
 
 2. **Metadaten-Block** (Blockquote mit wichtigen Links)
+   
+   **Standard-Layout (immer in dieser Reihenfolge verwenden):**
    ```markdown
-   > 💾 **Modul:** `path/to/module.py`  
-   > 🚀 **LinkedIn Post:** [Titel](URL)  
-   > 📦 **Implementierung:** Siehe [datei.py](../path/to/datei.py)
+   > ➡️ **Details siehe:** [Phase {N} in Projekt-Evolution](#anchor-link)  
+   > 💼 **[LinkedIn Post: Titel](https://www.linkedin.com/posts/...)**  
+   > 💾 **Modul:** `phase{n}_module_name/file.py`
    ```
+   
+   **Variationen je nach Kontext:**
+   - Für README-Sektionen: `➡️ **Details siehe:**` mit internem Link
+   - Für Phasen-Docs: `📖 **Implementierung:**` mit Code-Link
+   - Optional: `🧠 **Dokumentation:**` für weiterführende Docs
 
 3. **Horizontale Linie** (`---`) nach Metadaten
 

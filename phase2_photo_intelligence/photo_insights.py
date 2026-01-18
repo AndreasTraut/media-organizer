@@ -333,18 +333,43 @@ def find_images_with_person(index_path='insights_index.json', known_face_dir=Non
     known_encodings = []
     known_names = []
 
-    # Build known encodings list using available backend
+    # Validate known_face_dir early and provide clear messages instead of
+    # raising a FileNotFoundError when iterating the path.
     if known_face_dir:
         kd = Path(known_face_dir)
-        for k in kd.iterdir():
-            if k.is_file():
+        if not kd.exists():
+            print(f"Known faces folder not found: {kd}")
+            return {}
+        if not kd.is_dir():
+            print(f"Known faces path is not a directory: {kd}")
+            return {}
+    else:
+        print('No known faces folder provided. Use --find-person or set KNOWN_FACES_DIR in .env')
+        return {}
+
+    # Build known encodings list using available backend
+    # Supports both flat structure (files directly in folder) and
+    # per-person subfolders (e.g., knownFaces/Person1/*.jpg, knownFaces/Person2/*.jpg)
+    if known_face_dir:
+        kd = Path(known_face_dir)
+        # Use rglob to find all image files recursively
+        image_extensions = {'.jpg', '.jpeg', '.png', '.tiff', '.bmp'}
+        for k in kd.rglob('*'):
+            if k.is_file() and k.suffix.lower() in image_extensions:
+                # Determine person name: use parent folder name if in subfolder,
+                # otherwise use file stem
+                if k.parent != kd:
+                    person_name = k.parent.name
+                else:
+                    person_name = k.stem
                 try:
                     if HAS_FACE_RECOG:
                         img = face_recognition.load_image_file(str(k))
                         encs = face_recognition.face_encodings(img)
                         if encs:
                             known_encodings.append(__list_to_numpy(encs[0]))
-                            known_names.append(k.stem)
+                            known_names.append(person_name)
+                            print(f"  Loaded known face: {person_name} from {k.name}")
                     elif HAS_DEEPFACE:
                         reps = None
                         try:
@@ -355,18 +380,23 @@ def find_images_with_person(index_path='insights_index.json', known_face_dir=Non
                             # reps may be list or single; normalize
                             if isinstance(reps, dict) and 'embedding' in reps:
                                 known_encodings.append(__list_to_numpy(reps['embedding']))
-                                known_names.append(k.stem)
+                                known_names.append(person_name)
+                                print(f"  Loaded known face: {person_name} from {k.name}")
                             elif isinstance(reps, list):
                                 # pick first embedding if multiple
                                 first = reps[0]
                                 if isinstance(first, dict) and 'embedding' in first:
                                     known_encodings.append(__list_to_numpy(first['embedding']))
-                                    known_names.append(k.stem)
+                                    known_names.append(person_name)
+                                    print(f"  Loaded known face: {person_name} from {k.name}")
                                 elif isinstance(first, (list, tuple)):
                                     known_encodings.append(__list_to_numpy(first))
-                                    known_names.append(k.stem)
-                except Exception:
+                                    known_names.append(person_name)
+                                    print(f"  Loaded known face: {person_name} from {k.name}")
+                except Exception as e:
+                    print(f"  Warning: Could not process {k}: {e}")
                     continue
+        print(f"Loaded {len(known_encodings)} known face(s) for {len(set(known_names))} person(s)")
 
     results = {}
 
@@ -393,11 +423,70 @@ def find_images_with_person(index_path='insights_index.json', known_face_dir=Non
                     score = cos_sim(known, target)
                     # similarity threshold: convert to similarity (0..1)
                     if score >= threshold:
-                        results.setdefault(known_names[ki], []).append(path)
+                        # Use a set per person to avoid duplicates
+                        if known_names[ki] not in results:
+                            results[known_names[ki]] = set()
+                        results[known_names[ki]].add(path)
                 except Exception:
                     continue
 
-    return results
+    # Convert sets to sorted lists for JSON serialization
+    return {name: sorted(list(paths)) for name, paths in results.items()}
+
+
+def copy_found_images(results: dict, target_dir: str, flatten: bool = False):
+    """
+    Kopiert gefundene Bilder in einen Zielordner.
+    
+    Args:
+        results: Dictionary mit {Personenname: [Bildpfade]}
+        target_dir: Zielverzeichnis
+        flatten: Wenn True, alle Bilder flach in Personen-Ordner;
+                 wenn False, Original-Unterordner beibehalten
+    
+    Returns:
+        Dictionary mit Kopier-Statistiken
+    """
+    import shutil
+    target = Path(target_dir)
+    stats = {'total': 0, 'copied': 0, 'skipped': 0, 'errors': 0}
+    
+    for person_name, image_paths in results.items():
+        person_folder = target / person_name
+        person_folder.mkdir(parents=True, exist_ok=True)
+        
+        for src_path in image_paths:
+            stats['total'] += 1
+            src = Path(src_path)
+            
+            if not src.exists():
+                print(f"  [WARN] Quelle nicht gefunden: {src}")
+                stats['errors'] += 1
+                continue
+            
+            # Ziel-Dateiname bestimmen
+            if flatten:
+                # Alle Bilder direkt in Personen-Ordner
+                dest = person_folder / src.name
+            else:
+                # Verwende nur Dateiname ohne komplette Pfadstruktur
+                dest = person_folder / src.name
+            
+            # Duplikate vermeiden
+            if dest.exists():
+                print(f"  [SKIP] Bereits vorhanden: {dest.name}")
+                stats['skipped'] += 1
+                continue
+            
+            try:
+                shutil.copy2(src, dest)
+                print(f"  [OK] Kopiert: {src.name} -> {person_name}/")
+                stats['copied'] += 1
+            except Exception as e:
+                print(f"  [ERROR] Fehler bei {src.name}: {e}")
+                stats['errors'] += 1
+    
+    return stats
 
 
 def __list_to_numpy(lst):
@@ -415,6 +504,9 @@ if __name__ == '__main__':
     parser.add_argument('--store-embeddings', action='store_true', help='Store full embedding vectors in the JSON index')
     parser.add_argument('--find-person', type=str, nargs='?', const=KNOWN_FACES, default=None, help='Folder with known faces to search for (uses KNOWN_FACES_DIR from .env if not specified)')
     parser.add_argument('--index-path', type=str, default='insights_index.json')
+    parser.add_argument('--copy-to', type=str, default=TARGET, help='Copy found images to this directory (creates subfolders per person). Defaults to PHOTO_TARGET from .env')
+    parser.add_argument('--flatten', action='store_true', help='Put all images directly in person folder (no subfolders)')
+    parser.add_argument('--threshold', type=float, default=0.85, help='Cosine similarity threshold for face matching (0.0-1.0, default: 0.85, higher = stricter)')
     args = parser.parse_args()
 
     if args.build_index:
@@ -459,7 +551,18 @@ if __name__ == '__main__':
         if not args.find_person:
             print('Error: KNOWN_FACES_DIR not set in .env and no path provided via --find-person')
         else:
-            res = find_images_with_person(index_path=args.index_path, known_face_dir=args.find_person)
-            print(json.dumps(res, indent=2, ensure_ascii=False))
+            print(f"[INFO] Threshold: {args.threshold} (hoeher = strenger)")
+            res = find_images_with_person(index_path=args.index_path, known_face_dir=args.find_person, threshold=args.threshold)
+            
+            # Wenn --copy-to angegeben, Bilder kopieren
+            if args.copy_to:
+                print(f"\n[COPY] Kopiere gefundene Bilder nach: {args.copy_to}")
+                print("-" * 50)
+                stats = copy_found_images(res, args.copy_to, flatten=args.flatten)
+                print("-" * 50)
+                print(f"[DONE] Zusammenfassung: {stats['copied']} kopiert, {stats['skipped']} uebersprungen, {stats['errors']} Fehler")
+            else:
+                # Nur JSON ausgeben
+                print(json.dumps(res, indent=2, ensure_ascii=False))
     else:
         parser.print_help()

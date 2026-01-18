@@ -100,27 +100,79 @@ python phase2_photo_intelligence/photo_insights.py --build-index --out insights_
 
 ### 🔍 Personensuche
 
-**Befehl (drei Varianten):**
+Die Personensuche findet alle Bilder, in denen bestimmte Personen vorkommen. Sie vergleicht Gesichter aus deinem Foto-Index mit Referenzbildern bekannter Personen.
+
+#### Schritt 1: Nur suchen (JSON-Ausgabe)
+
 ```powershell
-# Variante 1: Verwendet KNOWN_FACES_DIR aus .env automatisch
+# Sucht Personen und zeigt Ergebnis als JSON-Liste
 python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
-
-# Variante 2: Mit explizitem Pfad zu bekannten Gesichtern
-python phase2_photo_intelligence/photo_insights.py --find-person C:\Fotos\KnownFaces --index-path insights_index.json
-
-# Variante 3: Nur --find-person Flag (nutzt .env Konfiguration)
-python phase2_photo_intelligence/photo_insights.py --find-person
 ```
 
-**Ablauf:**
+> 💡 **Was passiert:** Das Script gibt eine **JSON-Liste mit Bildpfaden** auf der Konsole aus.  
+> Die Originalbilder bleiben unverändert — es wird nichts kopiert oder verschoben!
 
-1. Lädt vorhandenen Index aus `insights_index.json`
-2. Lädt Referenz-Gesichter aus `KNOWN_FACES_DIR` (oder angegebenem Pfad)
-3. Durchsucht Face-Embeddings nach Übereinstimmungen
-4. Nutzt Cosine-Similarity für Gesichtsvergleich
-5. Gibt gefilterte Liste mit Pfaden und Konfidenz-Scores zurück
+#### Schritt 2: Gefundene Bilder kopieren (NEU! 🆕)
 
-**Hinweis:** Stelle sicher, dass `KNOWN_FACES_DIR` in `.env` gesetzt ist oder übergebe den Pfad explizit.
+```powershell
+# Sucht UND kopiert alle gefundenen Bilder in einen Zielordner
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --copy-to %PHOTO_TARGET%\Gefundene\Personen
+```
+
+**Was passiert bei `--copy-to`:**
+1. Die Suche läuft wie gewohnt
+2. Ein Ordner pro Person wird angelegt (z.B. `Person1/`, `Person2/`)
+3. Alle gefundenen Bilder werden in den jeweiligen Personen-Ordner **kopiert** (nicht verschoben!)
+4. Original-Unterordner werden beibehalten
+
+**Ergebnis-Struktur:**
+```
+%PHOTO_TARGET%\Gefundene\Personen\
+  ├── Person1/
+  │   ├── Portraits Person1 2025/
+  │   │   ├── PXL_20230701_090051515.jpg
+  │   │   └── PXL_20250308_081856206.jpg
+  │   └── Portraits Person2 2025/
+  │       └── PXL_20250308_081856206.jpg  ← Person1 war auch auf Person2s Bildern!
+  └── Person2/
+      ├── Portraits Person2 2025/
+      │   ├── COLOR_POP.jpg
+      │   └── PXL_20250418_145226240.PORTRAIT 1.jpg
+      └── ...
+```
+
+**Optionen:**
+| Flag | Beschreibung |
+|------|--------------|
+| `--copy-to PFAD` | Kopiert Bilder in diesen Zielordner |
+| `--flatten` | Alle Bilder direkt in Personen-Ordner (keine Unterordner) |
+| `--threshold 0.6` | Ähnlichkeits-Schwelle (0.0-1.0, Standard: 0.6, höher = strenger) |
+
+**Threshold-Werte erklärt:**
+| Wert | Bedeutung |
+|------|-----------|
+| `0.5` | Locker — mehr Treffer, aber auch mehr False Positives |
+| `0.6` | Standard — gute Balance |
+| `0.7` | Streng — weniger Treffer, weniger Fehler |
+| `0.85` | Sehr streng — nur sehr sichere Matches |
+
+> 💡 **Tipp:** Wenn im Person1-Ordner auch Person2-Bilder landen, erhöhe den Threshold!  
+> Wenn Bilder in beiden Ordnern auftauchen, sind vermutlich **beide Personen** auf dem Foto.
+
+**Beispiel mit `--flatten` und höherem Threshold:**
+```powershell
+# Flache Struktur mit strengerem Matching (weniger False Positives)
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --copy-to %PHOTO_TARGET%\Gefundene\Personen --flatten --threshold 0.85
+```
+
+#### Wichtige Hinweise
+
+| Thema | Erklärung |
+|-------|-----------|
+| **KNOWN_FACES_DIR** | Wird aus `.env` geladen — dort liegen die Referenzbilder |
+| **PHOTO_SOURCE** | Hier liegen die zu durchsuchenden Bilder (Index-Quelle) |
+| **PHOTO_TARGET** | Standard-Zielordner für `--copy-to` (wenn nicht explizit angegeben) |
+| **Originale** | Bleiben immer erhalten — `--copy-to` kopiert, verschiebt nicht |
 
 ---
 
@@ -371,22 +423,41 @@ python phase2_photo_intelligence/photo_insights.py --find-person --index-path in
 `photo_insights.py` versucht standardmäßig `face_recognition` (dlib). Wenn `face_recognition` nicht installiert oder das Build nicht möglich ist, nutzt das Script automatisch `DeepFace` als Fallback für Face-Detektion und Embeddings.
 
 - Vorteile: kein Build-Tool (Visual Studio/CMake) nötig; funktioniert auf Windows ohne weitere System-Tools.
-- Verhalten: Felder im Index bleiben identisch strukturiert — `faces.encodings` enthält Embeddings, `faces.locations` kann `null` sein, wenn die Fallback-Route verwendet wurde.
+- Verhalten: Felder im Index bleiben identisch strukturiert — `faces.encodings` enthält Embeddings (2048-dim bei DeepFace/Facenet), `faces.locations` kann `null` sein.
+- ⚠️ **Wichtig für TensorFlow 2.20+:** Das Paket `tf-keras` muss installiert sein (`pip install tf-keras`)
 
 Wenn du `face_recognition` manuell installiert hast, wird es bevorzugt (liefert zusätzlich lokale Face-Locations). Andernfalls genügt `DeepFace` (berechnet Face-Embeddings zuverlässig).
 
 
-**Erwartetes Ergebnis:**
-```json
-{
-  "Andreas": [
-    "C:\\Fotos\\Sorted\\2024-12-25\\IMG_001.jpg",
-    "C:\\Fotos\\Sorted\\2024-11-10\\IMG_042.jpg"
-  ],
-  "Maria": [
-    "C:\\Fotos\\Sorted\\2024-10-30\\IMG_089.jpg"
-  ]
-}
+**✅ Verifiziertes Ergebnis (Testlauf 2026-01-18):**
+
+Mit `--threshold 0.85` (streng) wurden die Personen korrekt getrennt:
+
+```
+Loaded 22 known face(s) for 2 person(s)
+[INFO] Threshold: 0.85 (hoeher = strenger)
+
+Ergebnis mit --copy-to --flatten --threshold 0.85:
+  > Person1-Ordner: 8 Bilder (nur Person1)
+  > Person2-Ordner: 14 Bilder (nur Person2)
+```
+
+**Beispiel-Befehl:**
+```powershell
+python photo_insights.py --find-person --index-path insights_index.json --copy-to %PHOTO_TARGET%\Gefundene\Personen --flatten --threshold 0.85
+```
+
+**Ergebnis-Struktur:**
+```
+%PHOTO_TARGET%\Gefundene\Personen\
+  ├── Person1/           ← 8 Bilder mit Person1
+  │   ├── PXL_20230701_090051515.jpg
+  │   ├── PXL_20250308_081856206.jpg
+  │   └── ...
+  └── Person2/           ← 14 Bilder mit Person2
+      ├── COLOR_POP.jpg
+      ├── PXL_20250418_145226240.PORTRAIT 1.jpg
+      └── ...
 ```
 
 ⚠️ **Hinweis:** Leeres `knownFaces`-Verzeichnis führt zu keinen Ergebnissen. Mindestens eine Person mit Referenzbildern muss vorhanden sein.

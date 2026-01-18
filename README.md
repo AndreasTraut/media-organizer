@@ -166,18 +166,13 @@ Die Intelligence-Module nutzen KI **zur Laufzeit** für unstrukturierte Datenana
 |---------------------|-------------------|-------|
 | Entitäten extrahieren | Face Recognition + Object Detection | `phase2_photo_intelligence/photo_insights.py` |
 | Gesichtsanalyse | DeepFace Integration | `phase2_photo_intelligence/photo_insights.py` |
+| **In welchen Bildern ist Person A?** | **Personensuche mit `--find-person` + `--copy-to`** | `phase2_photo_intelligence/photo_insights.py` |
 | Emotionale Zustände | FER (Facial Expression Recognition) | `phase2_photo_intelligence/photo_insights.py` |
 | Bilder in Embeddings umwandeln | CLIP-Embeddings + FAISS Vector-DB | `phase2_photo_intelligence/photo_rag.py` |
 | RAG auf Bilderbasis | Semantische Suche + Kontext-Engine | `phase2_photo_intelligence/photo_rag.py` |
 | LLM-Integration | GPT-4o Chat-Interface | `phase2_photo_intelligence/photo_rag.py` |
 
 #### 🧠 Was ist neu?
-
-**🔍 Semantische Suche (RAG-basiert) — `phase2_photo_intelligence/photo_rag.py`**
-
-- **CLIP-Embeddings** ermöglichen Suche nach Inhalten statt nur Metadaten
-- **FAISS Vector-DB** für schnelle Ähnlichkeitssuche in großen Sammlungen
-- **Beispiel-Query:** *"Strand im Sommer"* → System findet passende Bilder ohne explizite Tags
 
 **🔍 Semantische Suche (RAG-basiert) — `phase2_photo_intelligence/photo_rag.py`**
 
@@ -191,6 +186,8 @@ Die Intelligence-Module nutzen KI **zur Laufzeit** für unstrukturierte Datenana
 **🧑‍🔬 Deep Insights & Entity-Extraktion — `phase2_photo_intelligence/photo_insights.py`**
 
 - **Gesichtserkennung (DeepFace):** Automatische Erkennung von Personen
+- **Personensuche:** Finde alle Bilder mit bestimmten Personen (`--find-person`)
+- **Bilder kopieren:** Gefundene Bilder automatisch in Personen-Ordner sortieren (`--copy-to`)
 - **Emotionsanalyse (FER):** Erkennung von Gesichtsausdrücken (glücklich, traurig, neutral, etc.)
 - **Timeline-Analysen:** Emotionaler Zustand von Personen über Zeit
 - **Event-Detection:** High- und Lowlights automatisch identifizieren
@@ -208,7 +205,13 @@ Die Intelligence-Module nutzen KI **zur Laufzeit** für unstrukturierte Datenana
 pip install -r requirements-phase2.txt
 
 # Index mit Metadaten, Gesichtern, Emotionen erstellen
-python phase2_photo_intelligence/photo_insights.py --build-index
+python phase2_photo_intelligence/photo_insights.py --build-index --out insights_index.json
+
+# Personensuche: Finde alle Bilder mit bestimmten Personen
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
+
+# Personensuche MIT Kopieren der gefundenen Bilder in Zielordner
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --copy-to C:\Gefundene\Personen --threshold 0.7
 
 # Semantische Suche
 python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer"

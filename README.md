@@ -207,11 +207,14 @@ pip install -r requirements-phase2.txt
 # Index mit Metadaten, Gesichtern, Emotionen erstellen
 python phase2_photo_intelligence/photo_insights.py --build-index --out insights_index.json
 
-# Personensuche: Finde alle Bilder mit bestimmten Personen
+# Personensuche: Finde alle Bilder mit bestimmten Personen (nur JSON-Ausgabe)
 python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
 
-# Personensuche MIT Kopieren der gefundenen Bilder in Zielordner
-python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --copy-to C:\Gefundene\Personen --threshold 0.7
+# Personensuche MIT Kopieren: Verwendet PHOTO_TARGET aus .env (empfohlen)
+python phase2_photo_intelligence/photo_insights.py --find-person --use-target-from-env --threshold 0.85
+
+# Personensuche MIT Kopieren: Expliziter Pfad
+python phase2_photo_intelligence/photo_insights.py --find-person --copy-to "C:\Gefundene\Personen" --threshold 0.85
 
 # Semantische Suche
 python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer"

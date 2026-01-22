@@ -21,7 +21,12 @@ tmp/
 
 # Phase 2: Generierte Index- und Vector-DB-Dateien (Personenbezogene Daten)
 insights_index.json
-vector_db.index
-image_paths.json
+photo_vectors.faiss
+photo_vectors_mapping.json
 *.index
 *.faiss
+
+# IDE-spezifische Ordner
+.vscode/
+.idea/
+*.code-workspace

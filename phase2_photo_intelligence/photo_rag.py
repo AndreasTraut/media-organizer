@@ -14,7 +14,21 @@ Beispiel-Queries:
 Requirements (optional): transformers, torch, faiss-cpu (oder faiss-gpu), chromadb, openai
 """
 
+# Unterdrücke TensorFlow und Transformers Informationsmeldungen
 import os
+# TF_CPP_MIN_LOG_LEVEL=3 → Unterdrückt TensorFlow INFO/WARNING-Meldungen (0=all, 1=INFO, 2=WARNING, 3=ERROR)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# TF_ENABLE_ONEDNN_OPTS=0 → Deaktiviert oneDNN-Optimierungs-Meldungen
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+# TRANSFORMERS_VERBOSITY=error → Unterdrückt HuggingFace Transformers Warnungen
+os.environ['TRANSFORMERS_VERBOSITY'] = 'error'
+
+import warnings
+# Python warnings.filterwarnings → Filtert Deprecation-Warnungen und UserWarnings
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+
 import json
 from pathlib import Path
 from typing import List, Dict, Optional
@@ -114,10 +128,13 @@ class PhotoRAG:
         
         # FAISS-Index erstellen
         embeddings_np = np.array(embeddings).astype('float32')
+        # Normalisiere für Cosine-Similarity
+        faiss.normalize_L2(embeddings_np)
         dimension = embeddings_np.shape[1]
         
         if HAS_FAISS:
-            self.faiss_index = faiss.IndexFlatL2(dimension)
+            # IndexFlatIP für Cosine-Similarity (nach Normalisierung)
+            self.faiss_index = faiss.IndexFlatIP(dimension)
             self.faiss_index.add(embeddings_np)
             faiss.write_index(self.faiss_index, self.vector_db_path)
             
@@ -150,8 +167,18 @@ class PhotoRAG:
         print(f"✅ Vector-DB geladen: {self.faiss_index.ntotal} Bilder")
         return True
 
-    def search(self, query: str, top_k: int = 5) -> List[Dict]:
-        """Sucht ähnlichste Bilder zur Text-Query."""
+    def search(self, query: str, top_k: int = 5, min_score: float = 0.3) -> List[Dict]:
+        """Sucht ähnlichste Bilder zur Text-Query.
+        
+        Args:
+            query: Text-Suchanfrage (z.B. "Strand im Sommer")
+            top_k: Maximale Anzahl Ergebnisse
+            min_score: Minimaler Ähnlichkeits-Score (0.0-1.0, höher = strenger)
+                      Empfohlen: 0.3-0.5 (0.3=locker, 0.4=moderat, 0.5=streng)
+        
+        Returns:
+            Liste von Dictionaries mit 'path', 'distance', 'score'
+        """
         if not HAS_CLIP or not self.model:
             print("CLIP nicht verfügbar")
             return []
@@ -165,33 +192,45 @@ class PhotoRAG:
         with torch.no_grad():
             text_features = self.model.get_text_features(**inputs)
         query_embedding = text_features[0].cpu().numpy().astype('float32').reshape(1, -1)
+        # Normalisiere für Cosine-Similarity
+        faiss.normalize_L2(query_embedding)
         
-        # FAISS-Suche
-        distances, indices = self.faiss_index.search(query_embedding, top_k)
+        # FAISS-Suche (hole mehr als top_k, um nach Threshold-Filterung genug zu haben)
+        search_k = min(top_k * 3, self.faiss_index.ntotal)  # 3x top_k als Buffer
+        distances, indices = self.faiss_index.search(query_embedding, search_k)
         
         results = []
         for i, idx in enumerate(indices[0]):
             if idx < len(self.id_to_path):
-                results.append({
-                    'path': self.id_to_path[idx],
-                    'distance': float(distances[0][i]),
-                    'score': 1.0 / (1.0 + float(distances[0][i]))  # normalisiert
-                })
+                # IndexFlatIP gibt Cosine-Similarity direkt zurück (0-1)
+                score = float(distances[0][i])
+                
+                # Nur Ergebnisse über min_score zurückgeben
+                if score >= min_score:
+                    results.append({
+                        'path': self.id_to_path[idx],
+                        'distance': float(distances[0][i]),
+                        'score': score
+                    })
+                
+                # Stoppe wenn genug Ergebnisse gesammelt
+                if len(results) >= top_k:
+                    break
         
         return results
 
-    def chat(self, user_query: str, top_k: int = 3) -> str:
+    def chat(self, user_query: str, top_k: int = 3, min_score: float = 0.3) -> str:
         """Nutzt LLM + Retrieval für natürlichsprachliche Antwort."""
         if not HAS_OPENAI or not OPENAI_API_KEY:
             print("OpenAI API nicht konfiguriert. Setze OPENAI_API_KEY in .env")
             # Fallback: nur Retrieval
-            results = self.search(user_query, top_k)
+            results = self.search(user_query, top_k, min_score)
             if not results:
                 return "Keine passenden Bilder gefunden."
             return f"Gefundene Bilder:\n" + "\n".join([f"- {r['path']} (Score: {r['score']:.2f})" for r in results])
         
         # Retrieval
-        results = self.search(user_query, top_k)
+        results = self.search(user_query, top_k, min_score)
         context = "\n".join([f"Bild {i+1}: {r['path']}" for i, r in enumerate(results)])
         
         # LLM-Call
@@ -210,9 +249,10 @@ class PhotoRAG:
         return response.choices[0].message.content
 
 
-def interactive_chat(rag: PhotoRAG):
+def interactive_chat(rag: PhotoRAG, min_score: float = 0.3):
     """Interaktiver Chat-Modus."""
     print("\n🤖 Photo-RAG Chat gestartet. Tippe 'exit' zum Beenden.\n")
+    print(f"ℹ️  Minimaler Score: {min_score} (Werte: 0.3=locker, 0.4=moderat, 0.5=streng)\n")
     while True:
         query = input("Du: ").strip()
         if query.lower() in ['exit', 'quit', 'bye']:
@@ -222,14 +262,18 @@ def interactive_chat(rag: PhotoRAG):
             continue
         
         # Einfache Suche
-        results = rag.search(query, top_k=5)
-        print(f"\n📸 Top {len(results)} Ergebnisse:")
+        results = rag.search(query, top_k=5, min_score=min_score)
+        if not results:
+            print(f"\n❌ Keine Ergebnisse über Score {min_score}. Versuche niedrigeren --min-score.\n")
+            continue
+            
+        print(f"\n📸 {len(results)} Ergebnis(se):")
         for i, r in enumerate(results, 1):
             print(f"{i}. {Path(r['path']).name} (Score: {r['score']:.3f})")
         
         # Optional: LLM-Chat
         if HAS_OPENAI and OPENAI_API_KEY:
-            answer = rag.chat(query)
+            answer = rag.chat(query, min_score=min_score)
             print(f"\n💬 Antwort:\n{answer}\n")
         print()
 
@@ -237,11 +281,12 @@ def interactive_chat(rag: PhotoRAG):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='RAG für Bildersammlungen')
-    parser.add_argument('--build-vector-db', action='store_true', help='Erstelle FAISS-Index')
-    parser.add_argument('--source', type=str, default=SOURCE, help='Quellverzeichnis')
-    parser.add_argument('--query', type=str, help='Text-Suche (z.B. "Strand im Sommer")')
+    parser.add_argument('--build-vector-db', action='store_true', help='Vector-Datenbank aus Bildern erstellen')
+    parser.add_argument('--source', type=str, help='Quellverzeichnis für Bilder (Standard: PHOTO_SOURCE aus .env)')
+    parser.add_argument('--query', type=str, help='Suchanfrage in natürlicher Sprache')
+    parser.add_argument('--top-k', type=int, default=5, help='Anzahl der Ergebnisse (Standard: 5)')
     parser.add_argument('--chat', action='store_true', help='Interaktiver Chat-Modus')
-    parser.add_argument('--top-k', type=int, default=5, help='Anzahl Ergebnisse')
+    parser.add_argument('--min-score', type=float, default=0.3, help='Minimaler Ähnlichkeits-Score (0.0-1.0, Standard: 0.3, höher = strenger)')
     args = parser.parse_args()
     
     rag = PhotoRAG()
@@ -249,12 +294,16 @@ if __name__ == '__main__':
     if args.build_vector_db:
         rag.build_vector_db(source_dir=args.source)
     elif args.query:
-        results = rag.search(args.query, top_k=args.top_k)
-        print(f"\n📸 Top {len(results)} Ergebnisse für '{args.query}':")
-        for i, r in enumerate(results, 1):
-            print(f"{i}. {r['path']}")
-            print(f"   Score: {r['score']:.3f}")
+        results = rag.search(args.query, top_k=args.top_k, min_score=args.min_score)
+        if not results:
+            print(f"\n❌ Keine Ergebnisse über Score {args.min_score}.")
+            print(f"💡 Tipp: Versuche niedrigeren --min-score (z.B. --min-score 0.2)")
+        else:
+            print(f"\n📸 {len(results)} Ergebnis(se) für '{args.query}' (min_score={args.min_score}):")
+            for i, r in enumerate(results, 1):
+                print(f"{i}. {r['path']}")
+                print(f"   Score: {r['score']:.3f}")
     elif args.chat:
-        interactive_chat(rag)
+        interactive_chat(rag, min_score=args.min_score)
     else:
         parser.print_help()

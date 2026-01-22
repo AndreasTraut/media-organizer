@@ -50,8 +50,8 @@
 
 - `PHOTO_SOURCE` – Quellverzeichnis mit Fotos
 - `OPENAI_API_KEY` – API-Key für LLM-Integration (optional für Chat-Modus)
-- `vector_db.index` – FAISS Vector-Datenbank
-- `image_paths.json` – Mapping von Vektor-Indizes zu Dateipfaden
+- `photo_vectors.faiss` – FAISS Vector-Datenbank
+- `photo_vectors_mapping.json` – Mapping von Vektor-Indizes zu Dateipfaden
 
 ---
 
@@ -114,12 +114,19 @@ python phase2_photo_intelligence/photo_insights.py --find-person --index-path in
 
 #### Schritt 2: Gefundene Bilder kopieren (NEU! 🆕)
 
+**Variante A: Automatisch PHOTO_TARGET aus .env verwenden (empfohlen)**
 ```powershell
-# Sucht UND kopiert alle gefundenen Bilder in einen Zielordner
-python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --copy-to %PHOTO_TARGET%\Gefundene\Personen
+# Verwendet automatisch PHOTO_TARGET aus .env + erstellt Unterordner "GefundenePersonen"
+python phase2_photo_intelligence/photo_insights.py --find-person --use-target-from-env
 ```
 
-**Was passiert bei `--copy-to`:**
+**Variante B: Expliziten Pfad angeben**
+```powershell
+# Sucht UND kopiert alle gefundenen Bilder in einen expliziten Zielordner
+python phase2_photo_intelligence/photo_insights.py --find-person --copy-to "C:\Users\andre\myDockerRepositories\media-organizer-sample-pictures-output\GefundenePersonen"
+```
+
+**Was passiert beim Kopieren:**
 1. Die Suche läuft wie gewohnt
 2. Ein Ordner pro Person wird angelegt (z.B. `Person1/`, `Person2/`)
 3. Alle gefundenen Bilder werden in den jeweiligen Personen-Ordner **kopiert** (nicht verschoben!)
@@ -127,7 +134,7 @@ python phase2_photo_intelligence/photo_insights.py --find-person --index-path in
 
 **Ergebnis-Struktur:**
 ```
-%PHOTO_TARGET%\Gefundene\Personen\
+PHOTO_TARGET\GefundenePersonen\
   ├── Person1/
   │   ├── Portraits Person1 2025/
   │   │   ├── PXL_20230701_090051515.jpg
@@ -144,25 +151,24 @@ python phase2_photo_intelligence/photo_insights.py --find-person --index-path in
 **Optionen:**
 | Flag | Beschreibung |
 |------|--------------|
-| `--copy-to PFAD` | Kopiert Bilder in diesen Zielordner |
+| `--copy-to PFAD` | Kopiert Bilder in diesen expliziten Zielordner |
+| `--use-target-from-env` | Verwendet PHOTO_TARGET aus .env (erstellt automatisch Unterordner GefundenePersonen) |
 | `--flatten` | Alle Bilder direkt in Personen-Ordner (keine Unterordner) |
-| `--threshold 0.6` | Ähnlichkeits-Schwelle (0.0-1.0, Standard: 0.6, höher = strenger) |
+| `--threshold 0.85` | Ähnlichkeits-Schwelle (0.0-1.0, Standard: 0.85, höher = strenger) |
 
 **Threshold-Werte erklärt:**
 | Wert | Bedeutung |
 |------|-----------|
-| `0.5` | Locker — mehr Treffer, aber auch mehr False Positives |
-| `0.6` | Standard — gute Balance |
-| `0.7` | Streng — weniger Treffer, weniger Fehler |
-| `0.85` | Sehr streng — nur sehr sichere Matches |
-
-> 💡 **Tipp:** Wenn im Person1-Ordner auch Person2-Bilder landen, erhöhe den Threshold!  
-> Wenn Bilder in beiden Ordnern auftauchen, sind vermutlich **beide Personen** auf dem Foto.
+| `0.5` | Sehr locker — viele Treffer, viele False Positives |
+| `0.6` | Locker — mehr Treffer, einige False Positives |
+| `0.7` | Moderat — gute Balance |
+| `0.85` | Streng (Standard) — nur sichere Matches |
+| `0.9+` | Sehr streng — sehr wenige Treffer, minimale Fehler |
 
 **Beispiel mit `--flatten` und höherem Threshold:**
 ```powershell
 # Flache Struktur mit strengerem Matching (weniger False Positives)
-python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --copy-to %PHOTO_TARGET%\Gefundene\Personen --flatten --threshold 0.85
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --use-target-from-env --flatten --threshold 0.9
 ```
 
 #### Wichtige Hinweise
@@ -203,15 +209,16 @@ python phase2_photo_intelligence/photo_rag.py --build-vector-db
    - Öffnet jedes Bild mit PIL
    - Transformiert zu Tensor via CLIP-Processor
    - Generiert 512-dimensionalen Embedding-Vektor
-   - Normalisiert Vektor für Cosine-Similarity
+   - Normalisiert Vektor mit `faiss.normalize_L2()` für Cosine-Similarity
 
 3. **FAISS-Index erstellen:**
-   - Initialisiert `IndexFlatIP` (Inner Product) für Similarity-Search
+   - Initialisiert `IndexFlatIP` (Inner Product) für Cosine-Similarity
+   - Normalisiert alle Embeddings vor dem Hinzufügen
+   - Speichert Index in `photo_vectors.faiss`
    - Fügt alle Embeddings hinzu
-   - Speichert Index in `vector_db.index`
 
 4. **Mapping speichern:**
-   - Erstellt JSON-File mit `{index: image_path}` Zuordnung
+   - Erstellt JSON-File `photo_vectors_mapping.json` mit Zuordnung
    - Ermöglicht Rückübersetzung von Vektor-Treffern zu Dateipfaden
 
 ### 🔎 Semantische Suche
@@ -220,25 +227,51 @@ python phase2_photo_intelligence/photo_rag.py --build-vector-db
 ```powershell
 # Sucht die top-10 ähnlichsten Bilder zu einer Textbeschreibung
 python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10
+
+# Mit Threshold für bessere Qualität (nur gute Matches)
+python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10 --min-score 0.4
 ```
 
 **Ablauf:**
 
 1. **Query-Embedding erstellen:**
    - Transformiert Text-Query in CLIP-Embedding
-   - Normalisiert Vektor
+   - Normalisiert Vektor mit `faiss.normalize_L2()` für Cosine-Similarity
 
 2. **FAISS-Suche:**
    - Findet k-nearest-neighbors im Vector-Space
    - Gibt Similarity-Scores zurück
 
-3. **Ergebnis-Mapping:**
+3. **Threshold-Filterung:**
+   - Filtert Ergebnisse unterhalb von `min_score`
+   - Verhindert irrelevante Treffer
+
+4. **Ergebnis-Mapping:**
    - Übersetzt Vektor-Indizes in Dateipfade
    - Sortiert nach Relevanz-Score
 
-4. **Ausgabe:**
+5. **Ausgabe:**
    - Listet gefundene Bilder mit Scores
    - Optional: Vorschau in neuem Fenster
+
+**Threshold-Werte für `--min-score`:**
+| Wert | Bedeutung |
+|------|-----------|
+| `0.2` | Sehr locker — viele Treffer, auch unpassende |
+| `0.3` | Moderat — Standard, gute Balance |
+| `0.4` | Streng — nur gute Matches |
+| `0.5+` | Sehr streng — nur sehr ähnliche Bilder |
+
+> 💡 **Tipp:** Bei zu wenig Ergebnissen senke `--min-score`, bei zu vielen irrelevanten Treffern erhöhe ihn!
+
+**Beispiele:**
+```powershell
+# Locker (mehr Ergebnisse, auch weniger passende)
+python phase2_photo_intelligence/photo_rag.py --query "Mütze" --min-score 0.2 --top-k 10
+
+# Streng (nur sehr ähnliche Bilder)
+python phase2_photo_intelligence/photo_rag.py --query "Mütze" --min-score 0.5 --top-k 5
+```
 
 ### 💬 Interaktiver Chat-Modus
 
@@ -246,6 +279,9 @@ python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k
 ```powershell
 # Startet interaktiven Chat mit GPT-4o
 python phase2_photo_intelligence/photo_rag.py --chat
+
+# Mit höherem Threshold für präzisere Ergebnisse
+python phase2_photo_intelligence/photo_rag.py --chat --min-score 0.4
 ```
 
 **Funktionsweise:**
@@ -336,7 +372,6 @@ OPENAI_API_KEY=sk-...  # Optional für Chat-Modus
 ### Schritt 3: Index aufbauen
 
 ```powershell
-# Schritt A: Insights-Index erstellen
 # Schritt A: Insights-Index erstellen (voller Rebuild)
 python phase2_photo_intelligence/photo_insights.py --build-index --out insights_index.json
 
@@ -355,6 +390,9 @@ python phase2_photo_intelligence/photo_rag.py --build-vector-db
 ### Schritt 4: Suche starten
 
 ```powershell
+# Mit Threshold für bessere Qualität
+python phase2_photo_intelligence/photo_rag.py --query "Geburtstag mit Kuchen" --top-k 5 --min-score 0.4
+
 # Semantische Textsuche
 python phase2_photo_intelligence/photo_rag.py --query "Geburtstag mit Kuchen" --top-k 5
 
@@ -444,7 +482,7 @@ Ergebnis mit --copy-to --flatten --threshold 0.85:
 
 **Beispiel-Befehl:**
 ```powershell
-python photo_insights.py --find-person --index-path insights_index.json --copy-to %PHOTO_TARGET%\Gefundene\Personen --flatten --threshold 0.85
+python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --copy-to %PHOTO_TARGET%\GefundenePersonen --flatten --threshold 0.85
 ```
 
 **Ergebnis-Struktur:**

@@ -17,7 +17,18 @@ Beispiel-Usage:
 Requirements (optional): face_recognition, deepface, fer, transformers, torch, ftfy
 """
 
+# Unterdrücke TensorFlow/DeepFace Informationsmeldungen
 import os
+# TF_CPP_MIN_LOG_LEVEL=3 → Unterdrückt TensorFlow INFO/WARNING-Meldungen (0=all, 1=INFO, 2=WARNING, 3=ERROR)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# TF_ENABLE_ONEDNN_OPTS=0 → Deaktiviert oneDNN-Optimierungs-Meldungen
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+import warnings
+# Python warnings.filterwarnings → Filtert Deprecation-Warnungen von MTCNN und TensorFlow
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+
 import json
 from pathlib import Path
 from datetime import datetime
@@ -504,10 +515,15 @@ if __name__ == '__main__':
     parser.add_argument('--store-embeddings', action='store_true', help='Store full embedding vectors in the JSON index')
     parser.add_argument('--find-person', type=str, nargs='?', const=KNOWN_FACES, default=None, help='Folder with known faces to search for (uses KNOWN_FACES_DIR from .env if not specified)')
     parser.add_argument('--index-path', type=str, default='insights_index.json')
-    parser.add_argument('--copy-to', type=str, default=TARGET, help='Copy found images to this directory (creates subfolders per person). Defaults to PHOTO_TARGET from .env')
+    parser.add_argument('--copy-to', type=str, default=None, help='Copy found images to this directory (creates subfolders per person). Only copies if explicitly specified.')
+    parser.add_argument('--use-target-from-env', action='store_true', help='Use PHOTO_TARGET from .env as copy destination (creates GefundenePersonen subfolder automatically)')
     parser.add_argument('--flatten', action='store_true', help='Put all images directly in person folder (no subfolders)')
     parser.add_argument('--threshold', type=float, default=0.85, help='Cosine similarity threshold for face matching (0.0-1.0, default: 0.85, higher = stricter)')
     args = parser.parse_args()
+    
+    # Auto-set copy-to from env if requested
+    if args.use_target_from_env and TARGET:
+        args.copy_to = str(Path(TARGET) / "GefundenePersonen")
 
     if args.build_index:
         if not args.source:

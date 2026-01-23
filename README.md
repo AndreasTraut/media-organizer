@@ -223,12 +223,9 @@ python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer"
 python phase2_photo_intelligence/photo_rag.py --chat
 ```
 
-➡️ **[🧠 Detaillierte Dokumentation: Phase 2 - Photo Intelligence](docs/PHASE2_PHOTO_INTELLIGENCE.md)**
 
 
----
-
-## 🌟 Was jetzt möglich ist
+#### 🌟 Was jetzt möglich ist
 
 Mit Phase 2 hat sich der media-organizer von einem reinen Sortier-Tool zu einer echten **Photo Intelligence Suite** entwickelt. Was früher mühsame manuelle Arbeit war — das Durchsuchen tausender Familienfotos nach bestimmten Personen oder Momenten — erledigt jetzt die KI in Sekunden.
 
@@ -237,6 +234,10 @@ Mit Phase 2 hat sich der media-organizer von einem reinen Sortier-Tool zu einer 
 **Momente beschreiben:** Statt Dateinamen zu durchforsten, beschreibst du einfach, was du suchst: *"Strand im Sommer"*, *"Geburtstagskuchen"*, *"Wanderung in den Bergen"*. CLIP versteht den Inhalt deiner Bilder und findet passende Treffer.
 
 **Natürlich kommunizieren:** Im Chat-Modus unterhältst du dich mit deiner Bildersammlung. GPT-4o kombiniert deine Fragen mit den RAG-Ergebnissen und antwortet kontextuell: *"Die meisten Familienfotos aus 2024 wurden im August aufgenommen..."*
+
+
+➡️ **[🧠 Detaillierte Dokumentation: Phase 2 - Photo Intelligence](docs/PHASE2_PHOTO_INTELLIGENCE.md)**
+
 
 ---
 

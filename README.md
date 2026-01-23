@@ -231,18 +231,67 @@ python phase2_photo_intelligence/photo_rag.py --chat
 
 ### Phase 1: Basis-Module (Photo Sort)
 
-- **Sprache:** Python 3.x
-- **Core Library:** [Pillow](https://pypi.org/project/pillow/) für EXIF-Metadaten-Parsing
-- **Konfiguration:** python-dotenv für sichere Pfadverwaltung
-- **Infrastruktur:** Optimiert für Windows-Netzwerkpfade zu NAS-Systemen (Synology)
+**Core Technologies:**
+- **Sprache:** Python 3.8+
+- **Bildverarbeitung:** [Pillow (PIL)](https://pypi.org/project/pillow/) — EXIF-Metadaten-Extraktion aus Bilddateien
+  - Liest `DateTimeOriginal` EXIF-Tag für präzise Zeitstempel
+  - Fallback auf Dateisystem-Metadaten (`st_mtime`) für Videos und Collagen
+- **Pfadverwaltung:** `pathlib.Path` — Moderne, plattformübergreifende Pfad-Operationen
+- **Konfiguration:** `python-dotenv` — Sichere Umgebungsvariablen-Verwaltung über `.env`-Dateien
+- **Datei-Operationen:** `shutil` — Robuste Move/Copy-Operationen mit Fehlerbehandlung
+
+**Infrastruktur:**
+- Optimiert für Windows-Netzwerkpfade (UNC) zu NAS-Systemen (Synology)
+- EXIF-First-Strategie mit intelligentem Fallback-Mechanismus
+- Unterstützte Formate: `.jpg`, `.jpeg`, `.png`, `.tiff`, `.mp4`, `.mov`
+
+**Dependencies:** Siehe [requirements-phase1.txt](requirements-phase1.txt)
+
+---
 
 ### Phase 2: Intelligence-Module (Photo Intelligence)
 
-- **CLIP-Embeddings:** OpenAI CLIP für semantische Bild-Text-Zuordnung
-- **Vector Database:** FAISS für effiziente Ähnlichkeitssuche
-- **Face Recognition:** DeepFace für Gesichtserkennung
-- **LLM-Integration:** OpenAI GPT-4o für natürlichsprachliche Interaktion
-- **Emotion Analysis:** FER (Facial Expression Recognition)
+**Deep Learning & Computer Vision:**
+- **[CLIP](https://openai.com/research/clip) (openai/clip-vit-base-patch32)** — Contrastive Language-Image Pre-training
+  - Text-zu-Bild-Embeddings im gemeinsamen 512-dimensionalen Vektorraum
+  - Ermöglicht semantische Suche ohne manuelle Tags
+  - Integration via [HuggingFace Transformers](https://huggingface.co/docs/transformers/)
+- **[DeepFace](https://github.com/serengil/deepface)** — State-of-the-Art Face Recognition Framework
+  - Unterstützt mehrere Modelle: VGG-Face, Facenet, ArcFace
+  - Face-Embeddings für Personen-Matching mit konfigurierbarem Threshold
+  - Automatische Gesichts-Detection und -Alignment
+- **[FER](https://github.com/justinshenk/fer)** — Facial Expression Recognition
+  - Emotionsklassifikation: `happy`, `sad`, `angry`, `neutral`, `surprise`, `fear`, `disgust`
+  - Konfidenz-Scores pro erkannter Emotion
+
+**Vector Database & Search:**
+- **[FAISS](https://github.com/facebookresearch/faiss)** (Facebook AI Similarity Search)
+  - Hochperformante Nearest-Neighbor-Suche in Millionen von Embeddings
+  - `IndexFlatIP` für Cosine-Similarity (Inner Product nach L2-Normalisierung)
+  - Effiziente Speicherung via `faiss.write_index()` / `faiss.read_index()`
+
+**LLM & Natural Language:**
+- **[OpenAI GPT-4o](https://platform.openai.com/docs/)** — Interaktiver Chat-Modus
+  - RAG-basierte Kontext-Anreicherung (Retrieval-Augmented Generation)
+  - Natürlichsprachliche Queries: *"Zeige mir Fotos mit Familie aus 2024"*
+  - System-Prompt für domänenspezifisches Verständnis der Bildersammlung
+
+**Backend & Processing:**
+- **[PyTorch](https://pytorch.org/)** — Deep Learning Framework als Backend für CLIP
+- **NumPy** — Numerische Berechnungen und Vektor-Operationen
+- **[Pillow](https://pillow.readthedocs.io/)** — Bild-Loading und EXIF-Metadaten-Extraktion
+
+**Data Persistence:**
+- **JSON** — Index-Speicherung für Metadaten, Gesichter, Emotionen (`insights_index.json`)
+- **FAISS Binary** — Optimierte Vector-DB (`photo_vectors.faiss`)
+- **Mapping-JSON** — Rückübersetzung Vektor-Indizes zu Dateipfaden (`photo_vectors_mapping.json`)
+
+**Dependencies:** Siehe [requirements-phase2.txt](requirements-phase2.txt)
+
+**Performance:**
+- Index-Aufbau: ~1-2 Min pro 1.000 Bilder
+- Empfohlener RAM: 8GB+ (abhängig von Sammlungsgröße)
+- GPU-Unterstützung optional (CPU-Modus funktioniert für kleinere Sammlungen)
 
 
 

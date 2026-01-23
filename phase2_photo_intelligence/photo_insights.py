@@ -50,6 +50,9 @@ HAS_DEEPFACE = False
 HAS_FER = False
 HAS_CLIP = False
 
+# Globaler Cache für geladene Modelle (ersetzt mutable default argument)
+_MODEL_CACHE = {}
+
 try:
     import face_recognition
     HAS_FACE_RECOG = True
@@ -186,38 +189,50 @@ def __pil_to_np(img: Image.Image):
     return np.array(img)
 
 
-def get_embedding(path: Path, model_cache={}):
-    """Return a vector embedding for the image if CLIP available."""
+def get_embedding(path: Path):
+    """Return a vector embedding for the image if CLIP available.
+    Uses global _MODEL_CACHE to store loaded models (Lazy Loading).
+    """
     if not HAS_CLIP:
         return None
+    
+    global _MODEL_CACHE
+
     try:
         # prefer transformers CLIPModel
-        if 'transformers' not in model_cache:
+        if 'transformers' not in _MODEL_CACHE and 'clip' not in _MODEL_CACHE:
             try:
                 processor = CLIPProcessor.from_pretrained('openai/clip-vit-base-patch32')
                 model = CLIPModel.from_pretrained('openai/clip-vit-base-patch32')
-                model_cache['transformers'] = (processor, model)
+                _MODEL_CACHE['transformers'] = (processor, model)
             except Exception:
                 # fallback to openai/clip
-                import clip
-                device = 'cuda' if torch.cuda.is_available() else 'cpu'
-                model, preprocess = clip.load('ViT-B/32', device=device)
-                model_cache['clip'] = (model, preprocess, device)
+                try:
+                    import clip
+                    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+                    model, preprocess = clip.load('ViT-B/32', device=device)
+                    _MODEL_CACHE['clip'] = (model, preprocess, device)
+                except Exception:
+                    # If both fail, we can't do anything
+                    pass
 
-        if 'transformers' in model_cache:
-            processor, model = model_cache['transformers']
+        if 'transformers' in _MODEL_CACHE:
+            processor, model = _MODEL_CACHE['transformers']
             image = Image.open(path).convert('RGB')
             inputs = processor(images=image, return_tensors='pt')
             with torch.no_grad():
                 outputs = model.get_image_features(**inputs)
             vec = outputs[0].cpu().numpy().tolist()
             return vec
-        else:
-            model, preprocess, device = model_cache['clip']
+        elif 'clip' in _MODEL_CACHE:
+            model, preprocess, device = _MODEL_CACHE['clip']
             image = preprocess(Image.open(path)).unsqueeze(0).to(device)
             with torch.no_grad():
                 vec = model.encode_image(image)
             return vec[0].cpu().numpy().tolist()
+        else:
+            return None
+            
     except Exception:
         return None
 

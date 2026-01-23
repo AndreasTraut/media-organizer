@@ -171,7 +171,11 @@ RAG-System (Retrieval-Augmented Generation) für semantische Bildsuche:
 
 **Konfiguration:** `PHOTO_SOURCE`, `OPENAI_API_KEY` (optional), `photo_vectors.faiss`, `photo_vectors_mapping.json`
 
-### 📦 Vector-DB aufbauen
+---
+
+### 📦 Schritt 1: Vector-DB aufbauen (einmalig)
+
+> ⚠️ **Wichtig:** Dieser Schritt muss nur **einmal** ausgeführt werden, um die Datenbank zu erstellen.
 
 **Befehl:**
 ```powershell
@@ -179,7 +183,7 @@ RAG-System (Retrieval-Augmented Generation) für semantische Bildsuche:
 python phase2_photo_intelligence/photo_rag.py --build-vector-db
 ```
 
-**Ablauf:**
+**Was passiert beim Aufbau:**
 
 1. **CLIP-Modell laden:**
    - Lädt `openai/clip-vit-base-patch32` aus HuggingFace
@@ -193,48 +197,40 @@ python phase2_photo_intelligence/photo_rag.py --build-vector-db
 
 3. **FAISS-Index erstellen:**
    - Initialisiert `IndexFlatIP` (Inner Product) für Cosine-Similarity
-   - Normalisiert alle Embeddings vor dem Hinzufügen
+   - Fügt alle normalisierten Embeddings hinzu
    - Speichert Index in `photo_vectors.faiss`
-   - Fügt alle Embeddings hinzu
 
 4. **Mapping speichern:**
    - Erstellt JSON-File `photo_vectors_mapping.json` mit Zuordnung
    - Ermöglicht Rückübersetzung von Vektor-Treffern zu Dateipfaden
 
-### 🔎 Semantische Suche
+> ⏱️ **Performance:** ~1-2 Min pro 1.000 Bilder | 💾 **RAM:** 8GB+ empfohlen
 
-**Befehl:**
+---
+
+### 🔎 Schritt 2: Semantische Suche (wiederholt verwendbar)
+
+Nachdem die Vector-DB aufgebaut wurde, kannst du beliebig oft Suchanfragen durchführen.
+
+**Basis-Befehle:**
 ```powershell
-# Sucht die top-10 ähnlichsten Bilder zu einer Textbeschreibung
+# Einfache Suche: Top-10 ähnlichste Bilder
 python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10
 
 # Mit Threshold für bessere Qualität (nur gute Matches)
 python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10 --min-score 0.4
 ```
 
-**Ablauf:**
+**Wie funktioniert die Suche:**
 
-1. **Query-Embedding erstellen:**
-   - Transformiert Text-Query in CLIP-Embedding
-   - Normalisiert Vektor mit `faiss.normalize_L2()` für Cosine-Similarity
-
-2. **FAISS-Suche:**
-   - Findet k-nearest-neighbors im Vector-Space
-   - Gibt Similarity-Scores zurück
-
-3. **Threshold-Filterung:**
-   - Filtert Ergebnisse unterhalb von `min_score`
-   - Verhindert irrelevante Treffer
-
-4. **Ergebnis-Mapping:**
-   - Übersetzt Vektor-Indizes in Dateipfade
-   - Sortiert nach Relevanz-Score
-
-5. **Ausgabe:**
-   - Listet gefundene Bilder mit Scores
-   - Optional: Vorschau in neuem Fenster
+1. **Query-Embedding erstellen:** Text-Query → CLIP-Embedding (normalisiert)
+2. **FAISS-Suche:** k-nearest-neighbors im Vector-Space finden
+3. **Threshold-Filterung:** Ergebnisse < `min_score` werden aussortiert
+4. **Ergebnis-Mapping:** Vektor-Indizes → Dateipfade
+5. **Ausgabe:** Liste gefundener Bilder mit Similarity-Scores
 
 **Threshold-Werte für `--min-score`:**
+
 | Wert | Bedeutung |
 |------|-----------|
 | `0.2` | Sehr locker — viele Treffer, auch unpassende |
@@ -244,18 +240,29 @@ python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k
 
 > 💡 **Tipp:** Bei zu wenig Ergebnissen senke `--min-score`, bei zu vielen irrelevanten Treffern erhöhe ihn!
 
-**Beispiele:**
+**Praktische Beispiele:**
+
 ```powershell
 # Locker (mehr Ergebnisse, auch weniger passende)
 python phase2_photo_intelligence/photo_rag.py --query "Mütze" --min-score 0.2 --top-k 10
 
 # Streng (nur sehr ähnliche Bilder)
 python phase2_photo_intelligence/photo_rag.py --query "Mütze" --min-score 0.5 --top-k 5
+
+# Weitere Query-Ideen
+python phase2_photo_intelligence/photo_rag.py --query "Strand bei Sonnenuntergang" --top-k 5
+python phase2_photo_intelligence/photo_rag.py --query "Gruppenfoto mit vielen Menschen" --top-k 10
+python phase2_photo_intelligence/photo_rag.py --query "Berge im Hintergrund" --min-score 0.4 --top-k 8
 ```
 
 **💡 Query-Tipps:**
-- ✅ Beschreibend: *"Strand bei Sonnenuntergang"*, *"Gruppenfoto mit vielen Menschen"*, *"Berge im Hintergrund"*
-- ❌ Vermeiden: Dateinamen (*"Bild123.jpg"*) oder temporale Referenzen (*"Foto von gestern"*)
+
+| ✅ Funktioniert gut | ❌ Vermeiden |
+|---------------------|--------------|
+| Beschreibend: *"Strand bei Sonnenuntergang"* | Dateinamen: *"Bild123.jpg"* |
+| Objekte: *"Gruppenfoto mit vielen Menschen"* | Temporale Referenzen: *"Foto von gestern"* |
+| Szenen: *"Berge im Hintergrund"* | Abstrakte Konzepte ohne visuelle Entsprechung |
+| Stimmungen: *"Fröhliche Atmosphäre"* | Zu spezifische Namen: *"Andreas mit rotem Pullover"* |
 
 ### 💬 Interaktiver Chat-Modus
 

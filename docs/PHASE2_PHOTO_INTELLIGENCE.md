@@ -11,8 +11,8 @@
 **Zweck:** Transformation unstrukturierter Bilddaten in semantisch durchsuchbare Intelligence-Metadaten mit natürlichsprachlicher Interaktion.
 
 **Ansatz:** Modulares Zwei-Komponenten-System:
-1. **`photo_insights.py`** – Deep Learning für Gesichtserkennung, Emotionsanalyse und Metadaten-Extraktion
-2. **`photo_rag.py`** – RAG-System (Retrieval-Augmented Generation) für semantische Suche und LLM-Integration
+1. Modul **`photo_insights.py`** – Deep Learning für Gesichtserkennung, Emotionsanalyse und Metadaten-Extraktion
+2. Modul **`photo_rag.py`** – RAG-System (Retrieval-Augmented Generation) für semantische Suche und LLM-Integration
 
 **Die Evolution:** Von statischer Datums-Sortierung zu KI-basierter Inhaltsanalyse – ermöglicht Fragen wie *"In welchen Bildern ist Person A vorhanden?"* oder *"Zeige mir Strandbilder aus dem Sommer"*.
 
@@ -35,6 +35,7 @@ Extrahiert strukturierte Intelligence-Daten aus unstrukturierten Bildern:
 - `numpy`, `json` — Standard-Libraries für numerische Berechnungen und Datenserialisierung
 
 **Konfiguration:** `PHOTO_SOURCE`, `KNOWN_FACES_DIR`, `insights_index.json`
+**Debugging:** Nutze `python tools/inspect_index.py`, um den generierten Index zu analysieren (siehe [Tools](../tools/TOOLS.md#magnifying_glass_tilted_left-inspect_indexpy)).
 
 ### 📊 Index-Aufbau
 
@@ -73,7 +74,7 @@ python phase2_photo_intelligence/photo_insights.py --build-index --out insights_
 
 Die Personensuche findet alle Bilder, in denen bestimmte Personen vorkommen. Sie vergleicht Gesichter aus deinem Foto-Index mit Referenzbildern bekannter Personen.
 
-#### Schritt 1: Nur suchen (JSON-Ausgabe)
+#### Nur suchen (JSON-Ausgabe)
 
 ```powershell
 # Sucht Personen und zeigt Ergebnis als JSON-Liste
@@ -83,7 +84,7 @@ python phase2_photo_intelligence/photo_insights.py --find-person --index-path in
 > 💡 **Was passiert:** Das Script gibt eine **JSON-Liste mit Bildpfaden** auf der Konsole aus.  
 > Die Originalbilder bleiben unverändert — es wird nichts kopiert oder verschoben!
 
-#### Schritt 2: Gefundene Bilder kopieren
+#### Gefundene Bilder kopieren
 
 **Variante A: Automatisch PHOTO_TARGET aus .env verwenden (empfohlen)**
 ```powershell
@@ -106,17 +107,13 @@ python phase2_photo_intelligence/photo_insights.py --find-person --copy-to "C:\U
 **Ergebnis-Struktur:**
 ```
 PHOTO_TARGET\GefundenePersonen\
-  ├── Person1/
-  │   ├── Portraits Person1 2025/
-  │   │   ├── PXL_20230701_090051515.jpg
-  │   │   └── PXL_20250308_081856206.jpg
-  │   └── Portraits Person2 2025/
-  │       └── PXL_20250308_081856206.jpg  ← Person1 war auch auf Person2s Bildern!
-  └── Person2/
-      ├── Portraits Person2 2025/
-      │   ├── COLOR_POP.jpg
-      │   └── PXL_20250418_145226240.PORTRAIT 1.jpg
-      └── ...
+   ├── Person1/
+   │   ├── PXL_20230701_090051515.jpg
+   │   └── PXL_20250308_081856206.jpg
+   └── Person2/
+         ├── COLOR_POP.jpg
+         ├── PXL_20250418_145226240.PORTRAIT 1.jpg
+         └── ...
 ```
 
 **Optionen:**
@@ -170,10 +167,11 @@ RAG-System (Retrieval-Augmented Generation) für semantische Bildsuche:
 - [Pillow](https://pillow.readthedocs.io/) — Bild-Loading und -Verarbeitung
 
 **Konfiguration:** `PHOTO_SOURCE`, `OPENAI_API_KEY` (optional), `photo_vectors.faiss`, `photo_vectors_mapping.json`
+**Debugging:** Nutze `python tools/inspect_index.py`, um den generierten Index zu analysieren (siehe [Tools](../tools/TOOLS.md#magnifying_glass_tilted_left-inspect_indexpy)).
 
 ---
 
-### 📦 Schritt 1: Vector-DB aufbauen (einmalig)
+### 📦 Vector-DB aufbauen (einmalig)
 
 > ⚠️ **Wichtig:** Dieser Schritt muss nur **einmal** ausgeführt werden, um die Datenbank zu erstellen.
 
@@ -208,17 +206,20 @@ python phase2_photo_intelligence/photo_rag.py --build-vector-db
 
 ---
 
-### 🔎 Schritt 2: Semantische Suche (wiederholt verwendbar)
+### 🔎 Semantische Suche (wiederholt verwendbar)
 
 Nachdem die Vector-DB aufgebaut wurde, kannst du beliebig oft Suchanfragen durchführen.
 
 **Basis-Befehle:**
 ```powershell
 # Einfache Suche: Top-10 ähnlichste Bilder
-python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --top-k 10
 
 # Mit Threshold für bessere Qualität (nur gute Matches)
-python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 10 --min-score 0.4
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --top-k 10 --min-score 0.4
+
+# Sucht nach "beach in summer" und kopiert Ergebnisse nach PHOTO_TARGET/beach in summer
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --min-score 0.2 --top-k 10 --use-target-from-env
 ```
 
 **Wie funktioniert die Suche:**
@@ -244,25 +245,25 @@ python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k
 
 ```powershell
 # Locker (mehr Ergebnisse, auch weniger passende)
-python phase2_photo_intelligence/photo_rag.py --query "Mütze" --min-score 0.2 --top-k 10
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --min-score 0.2 --top-k 10 --use-target-from-env
 
 # Streng (nur sehr ähnliche Bilder)
-python phase2_photo_intelligence/photo_rag.py --query "Mütze" --min-score 0.5 --top-k 5
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --min-score 0.5 --top-k 5 --use-target-from-env
 
 # Weitere Query-Ideen
-python phase2_photo_intelligence/photo_rag.py --query "Strand bei Sonnenuntergang" --top-k 5
-python phase2_photo_intelligence/photo_rag.py --query "Gruppenfoto mit vielen Menschen" --top-k 10
-python phase2_photo_intelligence/photo_rag.py --query "Berge im Hintergrund" --min-score 0.4 --top-k 8
+python phase2_photo_intelligence/photo_rag.py --query "dog" --top-k 5 --min-score 0.2 --use-target-from-env
+python phase2_photo_intelligence/photo_rag.py --query "Mountains in the background" --min-score 0.2 --top-k 8 --use-target-from-env
+python phase2_photo_intelligence/photo_rag.py --query "red car" --min-score 0.2 --top-k 8 --use-target-from-env
 ```
 
 **💡 Query-Tipps:**
 
 | ✅ Funktioniert gut | ❌ Vermeiden |
 |---------------------|--------------|
-| Beschreibend: *"Strand bei Sonnenuntergang"* | Dateinamen: *"Bild123.jpg"* |
-| Objekte: *"Gruppenfoto mit vielen Menschen"* | Temporale Referenzen: *"Foto von gestern"* |
-| Szenen: *"Berge im Hintergrund"* | Abstrakte Konzepte ohne visuelle Entsprechung |
-| Stimmungen: *"Fröhliche Atmosphäre"* | Zu spezifische Namen: *"Andreas mit rotem Pullover"* |
+| Beschreibend: *"dog"* | Dateinamen: *"Bild123.jpg"* |
+| Objekte: *"Group photo with many people"* | Temporale Referenzen: *"Photo from yesterday"* |
+| Szenen: *"red car"* | Abstrakte Konzepte ohne visuelle Entsprechung |
+| Stimmungen: *"Cheerful atmosphere"* | Zu spezifische Namen: *"Andreas with red sweater"* |
 
 ### 💬 Interaktiver Chat-Modus
 
@@ -272,7 +273,7 @@ python phase2_photo_intelligence/photo_rag.py --query "Berge im Hintergrund" --m
 python phase2_photo_intelligence/photo_rag.py --chat
 
 # Mit höherem Threshold für präzisere Ergebnisse
-python phase2_photo_intelligence/photo_rag.py --chat --min-score 0.4
+python phase2_photo_intelligence/photo_rag.py --chat --min-score 0.2
 ```
 
 **Funktionsweise:**
@@ -304,7 +305,15 @@ python phase2_photo_intelligence/photo_rag.py --chat --min-score 0.4
 ```powershell
 # 1. Abhängigkeiten installieren
 pip install -r requirements-phase2.txt
+```
 
+> 🛠️ **Tipp für Windows-Nutzer:** Falls `pip install` bei `dlib` fehlschlägt, nutze unser Hilfsskript:
+> `python tools/install_dlib_wheel.py` (siehe [Tools-Dokumentation](../tools/TOOLS.md#box-install_dlib_wheelpy)).
+
+> 🧪 **Keine eigenen Testdaten?** Erstelle dir eine sichere Demo-Umgebung mit echten Gesichtern:
+> `python tools/fetch_demo_pictures.py` (siehe [Tools-Dokumentation](../tools/TOOLS.md#camera-fetch_demo_picturespy)).
+
+```powershell
 # 2. Konfiguration in .env
 PHOTO_SOURCE=C:\Fotos\Sortiert
 KNOWN_FACES_DIR=C:\Fotos\KnownFaces
@@ -315,7 +324,7 @@ python phase2_photo_intelligence/photo_insights.py --build-index --out insights_
 python phase2_photo_intelligence/photo_rag.py --build-vector-db
 
 # 4. Suche starten
-python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer" --top-k 5
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --top-k 5
 python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
 python phase2_photo_intelligence/photo_rag.py --chat
 ```
@@ -379,7 +388,7 @@ Mit Phase 2 hat sich der media-organizer von einem reinen Sortier-Tool zu einer 
 
 **Personen wiederfinden:** Du fragst dich, auf welchen Bildern Oma zu sehen ist? DeepFace vergleicht Gesichter und liefert dir alle Treffer. Keine Tags nötig, keine Vorbereitung — einfach ein Referenzbild und los.
 
-**Momente beschreiben:** Statt Dateinamen zu durchforsten, beschreibst du einfach, was du suchst: *"Strand im Sommer"*, *"Geburtstagskuchen"*, *"Wanderung in den Bergen"*. CLIP versteht den Inhalt deiner Bilder und findet passende Treffer.
+**Momente beschreiben:** Statt Dateinamen zu durchforsten, beschreibst du einfach, was du suchst: *"beach in summer"*, *"Geburtstagskuchen"*, *"Wanderung in den Bergen"*. CLIP versteht den Inhalt deiner Bilder und findet passende Treffer.
 
 **Natürlich kommunizieren:** Im Chat-Modus unterhältst du dich mit deiner Bildersammlung. GPT-4o kombiniert deine Fragen mit den RAG-Ergebnissen und antwortet kontextuell: *"Die meisten Familienfotos aus 2024 wurden im August aufgenommen..."*
 

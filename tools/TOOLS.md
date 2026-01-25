@@ -1,163 +1,206 @@
 # Tools — Hilfsskripte für media-organizer
 
-Dieses Verzeichnis enthält Utility-Skripte für Installation, Debugging und Analyse.
+Dieses Verzeichnis enthält Utility-Skripte für die Installation von Abhängigkeiten, das Beschaffen von Testdaten und das Debugging der Anwendung.
+
+## 📑 Inhaltsverzeichnis
+
+1.  **Setup & Installation**
+    * [📦 install_dlib_wheel.py](#-install_dlib_wheelpy) – Automatische dlib-Installation für Windows.
+2.  **Datenbeschaffung (Demo)**
+    * [📸 fetch_demo_pictures.py](#-fetch_demo_picturespy) – Lädt legale Testbilder (LFW-Datensatz) für Gesichtserkennung.
+    * [🌄 fetch_scene_images.py](#-fetch_scene_imagespy) – Lädt Szenen-Bilder (Strand, Auto, etc.) für semantische Suche.
+3.  **Analyse & Tests**
+    * [🔍 inspect_index.py](#-inspect_indexpy) – Prüft den generierten JSON-Index auf Gesichter und Metadaten.
+4.  **Low-Level Debugging**
+    * [🌐 inspect_gohlke.py](#-inspect_gohlkepy) – Hilft beim manuellen Suchen von Wheel-Dateien.
+5.  **Anleitungen**
+    * [🚀 Typischer Workflow](#-typischer-workflow)
+    * [📋 Abhängigkeiten](#-abhängigkeiten)
 
 ---
 
 ## 📦 `install_dlib_wheel.py`
 
-**Zweck:** Automatische Installation von `dlib` unter Windows durch Download der passenden Wheel-Datei von [Christoph Gohlkes Unofficial Binaries](https://www.lfd.uci.edu/~gohlke/pythonlibs/).
+**Zweck:**
+Automatische Installation von `dlib` unter Windows durch Download der passenden Wheel-Datei von [Christoph Gohlkes Unofficial Binaries](https://www.lfd.uci.edu/~gohlke/pythonlibs/).
 
-**Problem:** Unter Windows schlägt die normale `pip install dlib` Installation oft fehl, da CMake und Visual Studio Build Tools erforderlich sind. Dieses Script umgeht das Problem durch vorgefertigte Wheel-Dateien.
+**Das Problem:**
+Unter Windows schlägt `pip install dlib` oft fehl, da C++ Build Tools und CMake fehlen. Dieses Skript umgeht das Kompilieren durch fertige Binaries.
 
 **Verwendung:**
 ```powershell
-# Aktiviere die venv
 .\.venv\Scripts\Activate.ps1
-
-# Führe das Script aus
 python tools/install_dlib_wheel.py
+
+```
+
+---
+
+## 📸 `fetch_demo_pictures.py`
+
+**Zweck:**
+Erstellung einer legalen, reproduzierbaren Demo-Umgebung unter Verwendung des wissenschaftlichen Datensatzes "Labeled Faces in the Wild" (LFW).
+
+**Besonderheit:**
+Das Skript simuliert einen realistischen Anwendungsfall, indem es Referenzbilder von unbekannten Bildern trennt und Dateinamen im Chaos-Ordner verschleiert.
+
+**Verwendung:**
+
+```powershell
+python tools/fetch_demo_pictures.py
+
+```
+
+**Ergebnis (Ordnerstruktur):**
+
+```text
+demo_bilder/
+├── known_faces/       # Referenz-Bilder (zum Lernen)
+│   ├── George_W_Bush/
+│   │   └── George_W_Bush_1.jpg  (Max 10 Stück)
+│   └── ...
+└── alle_bilder/       # Chaos-Ordner (zum Sortieren)
+    ├── IMG_4f9a2b.jpg           (Enthält ALLE Bilder, aber anonymisiert)
+    ├── IMG_1x2y3z.jpg
+    └── ...
+
+```
+
+**Wann nutzen:**
+
+* Um `photo_insights.py` (Gesichtserkennung) zu testen.
+* Um zu beweisen, dass die KI Gesichter anhand des Bildinhalts erkennt (und nicht anhand des Dateinamens).
+
+---
+
+## 🌄 `fetch_scene_images.py`
+
+**Zweck:**
+Erweiterung des Demo-Datensatzes um allgemeine Szenen und Objekte (z.B. Strand, Berge, Autos, Hunde), um die **semantische Suche** (`photo_rag.py`) zu testen.
+
+**Besonderheit:**
+Das Skript nutzt LoremFlickr, um lizenzfreie Testbilder (Creative Commons) zu laden. Die Dateinamen werden ebenfalls anonymisiert (`IMG_xyz.jpg`), damit die KI den Bildinhalt visuell analysieren muss (CLIP-Embedding).
+
+**Verwendung:**
+
+```powershell
+python tools/fetch_scene_images.py
+
 ```
 
 **Was passiert:**
-1. Erkennt Python-Version und Architektur (z.B. `cp39-win_amd64`)
-2. Lädt die Gohlke-Seite herunter und sucht passendes Wheel
-3. Lädt Wheel in temporären Ordner
-4. Installiert via `pip install <wheel>`
-5. Installiert anschließend `face_recognition`
 
-**Ausgabe:**
-- ✅ Erfolg: "Success: dlib and face_recognition should now be installed."
-- ❌ Fehler: Exit-Codes 2-5 mit Fehlermeldung
+1. Lädt Bilder für Kategorien wie "beach", "car", "dog" herunter.
+2. Speichert sie direkt in den gemeinsamen Chaos-Ordner `demo_bilder/alle_bilder` (mischt sie mit den Gesichtern).
+3. Erstellt eine Log-Datei `demo_bilder/SCENES_LOG.txt` zur Kontrolle.
 
 **Wann nutzen:**
-- Bei fehlendem CMake/Build-Tools unter Windows
-- Wenn `pip install face_recognition` mit Build-Fehler abbricht
-- Für schnelle dlib-Installation ohne Compiler-Setup
+
+* Wenn du die Text-zu-Bild Suche ("Zeige mir einen Strand") testen willst.
+* Als Ergänzung zu `fetch_demo_pictures.py`, um einen gemischten Datensatz zu erhalten.
 
 ---
 
 ## 🔍 `inspect_index.py`
 
-**Zweck:** Analyse und Debugging des generierten `insights_index.json` mit Statistiken und Beispielen.
+**Zweck:**
+Analyse und Debugging des generierten `insights_index.json` mit Statistiken und Beispielen.
 
 **Verwendung:**
+
 ```powershell
 # Nach dem Index-Aufbau ausführen
 python tools/inspect_index.py
+
 ```
 
 **Was wird analysiert:**
-- Gesamtanzahl indizierter Bilder
-- Anzahl Bilder mit erkannten Gesichtern
-- Anzahl Bilder mit Emotions-Daten
-- Treffer für "Person1" und "Person2" (Beispiel-Suche)
-- Beispiel-Metadaten der ersten 5 Bilder mit Gesichtern
 
-**Beispiel-Ausgabe:**
-```
-total: 156
-with_faces: 45
-with_emotions: 45
-Person1 matches: 8
-['C:\\Fotos\\Sortiert\\Portraits Person1 2025\\PXL_20230701_090051515.jpg',
- 'C:\\Fotos\\Sortiert\\Portraits Person1 2025\\PXL_20250308_081856206.jpg',
- ...]
-Person2 matches: 14
-['C:\\Fotos\\Sortiert\\Portraits Person2 2025\\COLOR_POP.jpg',
- ...]
-
-Examples (up to 5) with `faces` metadata:
-----------------------------------------
-C:\Fotos\Sortiert\...\bild.jpg
-{'emotions': [{'angry': 0.01, 'happy': 0.95, ...}],
- 'faces': [{'encodings': [...], 'locations': [...]}]}
-```
-
-**Wann nutzen:**
-- Nach Index-Aufbau zur Qualitätskontrolle
-- Debugging bei Problemen mit Gesichtserkennung
-- Überprüfung, ob bekannte Personen erkannt wurden
-- Analyse der Index-Struktur vor eigenen Erweiterungen
+* Gesamtanzahl indizierter Bilder.
+* Anzahl Bilder mit erkannten Gesichtern & Emotionen.
+* Stichprobenartige Suche nach Personennamen.
+* Ausgabe von Beispiel-Metadaten (Embeddings, Face-Locations).
 
 ---
 
 ## 🌐 `inspect_gohlke.py`
 
-**Zweck:** Manuelle Inspektion der Gohlke-Website nach verfügbaren `dlib`-Wheels.
+**Zweck:**
+Manuelle Inspektion der Gohlke-Website nach verfügbaren `dlib`-Wheels, falls das automatische Installations-Skript fehlschlägt.
 
 **Verwendung:**
+
 ```powershell
 python tools/inspect_gohlke.py
-```
 
-**Was passiert:**
-1. Lädt HTML von https://www.lfd.uci.edu/~gohlke/pythonlibs/
-2. Filtert alle Zeilen, die "dlib" enthalten
-3. Zeigt die ersten 80 Treffer
-
-**Beispiel-Ausgabe:**
-```
-found 12
-1 <a href="/~gohlke/pythonlibs/dlib-19.24.0-cp39-cp39-win_amd64.whl">dlib-19.24.0-cp39-cp39-win_amd64.whl</a>
-2 <a href="/~gohlke/pythonlibs/dlib-19.24.0-cp310-cp310-win_amd64.whl">dlib-19.24.0-cp310-cp310-win_amd64.whl</a>
-...
 ```
 
 **Wann nutzen:**
-- Wenn `install_dlib_wheel.py` kein passendes Wheel findet
-- Zur manuellen Überprüfung verfügbarer Versionen
-- Debugging bei Download-Problemen
-- Vor manuellem Download, um verfügbare Python-Versionen zu sehen
+
+* Wenn `install_dlib_wheel.py` kein passendes Wheel findet.
+* Um zu prüfen, ob es Wheels für ganz neue Python-Versionen (z.B. 3.12/3.13) gibt.
 
 ---
 
 ## 🚀 Typischer Workflow
 
-### Neu-Installation unter Windows:
+Dies ist die empfohlene Reihenfolge, um das Projekt frisch aufzusetzen und zu testen:
 
-1. **dlib installieren:**
-   ```powershell
-   python tools/install_dlib_wheel.py
-   ```
+### 1. Installation (Nur Windows)
 
-2. **Index aufbauen:**
-   ```powershell
-   python phase2_photo_intelligence/photo_insights.py --build-index --out insights_index.json
-   ```
+Zuerst die schwierige `dlib`-Abhängigkeit lösen:
 
-3. **Index inspizieren:**
-   ```powershell
-   python tools/inspect_index.py
-   ```
+```powershell
+python tools/install_dlib_wheel.py
 
-### Debugging bei Installations-Problemen:
+```
 
-1. **Verfügbare Wheels prüfen:**
-   ```powershell
-   python tools/inspect_gohlke.py
-   ```
+### 2. Demo-Daten holen
 
-2. **Manuell installieren:**
-   - Passende Wheel-Datei von der Gohlke-Website herunterladen
-   - `pip install <pfad-zur-wheel-datei>`
+Wir laden neutrale Testdaten (Gesichter UND Szenen), statt private Bilder zu nutzen:
+
+```powershell
+python tools/fetch_demo_pictures.py  # Holt Gesichter
+python tools/fetch_scene_images.py   # Holt Szenen (Strand, Auto...)
+
+```
+
+### 3. Index aufbauen (Chaos-Ordner scannen)
+
+Wir indizieren den Ordner `alle_bilder` (wo alle Dateinamen anonymisiert sind):
+
+```powershell
+# Metadaten-Index
+python phase2_photo_intelligence/photo_insights.py --build-index --source "./demo_bilder/alle_bilder"
+
+# Vektor-Datenbank (für semantische Suche)
+python phase2_photo_intelligence/photo_rag.py --build-vector-db --source "./demo_bilder/alle_bilder"
+
+```
+
+### 4. Suchen & Sortieren
+
+Wir nutzen den Ordner `known_faces` als Vorlage oder suchen nach Begriffen:
+
+```powershell
+# Gesichtserkennung
+python phase2_photo_intelligence/photo_insights.py --find-person "./demo_bilder/known_faces"
+
+# Semantische Suche
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --top-k 5
+
+```
 
 ---
 
 ## 📋 Abhängigkeiten
 
-Alle Tools benötigen nur Python-Standard-Libraries:
-- `urllib.request` — Web-Downloads
-- `json` — JSON-Parsing
-- `subprocess` — pip-Aufrufe
-- `ssl`, `tempfile`, `platform`, `re` — System-Utilities
+Die Skripte nutzen größtenteils Python-Standard-Bibliotheken (`urllib`, `json`, `subprocess`).
 
-Keine zusätzlichen pip-Pakete erforderlich ✅
+**Ausnahme:** Die `fetch_`-Skripte benötigen folgende Pakete:
 
----
+```powershell
+pip install scikit-learn numpy Pillow requests
+```
 
-## 💡 Hinweise
 
-- **inspect_index.py** erwartet `insights_index.json` im Root des Repositories
-- **install_dlib_wheel.py** funktioniert nur unter Windows (nutzt `win_amd64`/`win_arm64` Tags)
-- Bei Problemen mit SSL-Zertifikaten siehe Python-Dokumentation zu `ssl.create_default_context()`

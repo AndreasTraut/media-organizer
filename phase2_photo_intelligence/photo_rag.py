@@ -5,10 +5,11 @@ Retrieval-Augmented Generation (RAG) für Bildersammlungen:
 - Nutzt CLIP-Embeddings für semantische Text-zu-Bild-Suche
 - Vector-DB (FAISS oder ChromaDB) für schnelles Similarity-Matching
 - Optional: LLM-Integration für natürlichsprachliche Konversation
+- NEU: Kopier-Funktion für Suchergebnisse
 
 Beispiel-Queries:
     python photo_rag.py --build-vector-db
-    python photo_rag.py --query "Strand im Sommer"
+    python photo_rag.py --query "Strand im Sommer" --use-target-from-env
     python photo_rag.py --chat  # interaktiver Modus
 
 Requirements (optional): transformers, torch, faiss-cpu (oder faiss-gpu), chromadb, openai
@@ -30,6 +31,8 @@ warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 import json
+import shutil
+import re
 from pathlib import Path
 from typing import List, Dict, Optional
 from dotenv import load_dotenv
@@ -37,7 +40,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SOURCE = os.getenv("PHOTO_SOURCE")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # optional für LLM-Chat
+TARGET = os.getenv("PHOTO_TARGET") # WICHTIG: Zielordner aus .env
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Optional imports
 HAS_CLIP = False
@@ -168,17 +172,7 @@ class PhotoRAG:
         return True
 
     def search(self, query: str, top_k: int = 5, min_score: float = 0.3) -> List[Dict]:
-        """Sucht ähnlichste Bilder zur Text-Query.
-        
-        Args:
-            query: Text-Suchanfrage (z.B. "Strand im Sommer")
-            top_k: Maximale Anzahl Ergebnisse
-            min_score: Minimaler Ähnlichkeits-Score (0.0-1.0, höher = strenger)
-                      Empfohlen: 0.3-0.5 (0.3=locker, 0.4=moderat, 0.5=streng)
-        
-        Returns:
-            Liste von Dictionaries mit 'path', 'distance', 'score'
-        """
+        """Sucht ähnlichste Bilder zur Text-Query."""
         if not HAS_CLIP or not self.model:
             print("CLIP nicht verfügbar")
             return []
@@ -248,6 +242,49 @@ class PhotoRAG:
         
         return response.choices[0].message.content
 
+def sanitize_filename(name):
+    """Macht einen String sicher für Dateinamen (entfernt / \ : * ? " < > |)."""
+    return re.sub(r'[\\/*?:"<>|]', "", name)
+
+def copy_search_results(results, target_base_dir, query_name):
+    """Kopiert gefundene Bilder in einen Ordner basierend auf der Query."""
+    # Ordnernamen bereinigen (z.B. "Beach/Sand" -> "BeachSand")
+    safe_query = sanitize_filename(query_name)
+    target_dir = Path(target_base_dir) / safe_query
+    
+    if not target_dir.exists():
+        target_dir.mkdir(parents=True, exist_ok=True)
+    
+    print(f"\n[COPY] Kopiere {len(results)} Bilder nach: {target_dir}")
+    print("-" * 50)
+    
+    stats = {'copied': 0, 'skipped': 0, 'errors': 0}
+    
+    for r in results:
+        src = Path(r['path'])
+        dest = target_dir / src.name
+        
+        if not src.exists():
+            print(f"  [WARN] Quelle weg: {src.name}")
+            stats['errors'] += 1
+            continue
+            
+        if dest.exists():
+            print(f"  [SKIP] Existiert schon: {src.name}")
+            stats['skipped'] += 1
+            continue
+            
+        try:
+            shutil.copy2(src, dest)
+            print(f"  [OK] {src.name}")
+            stats['copied'] += 1
+        except Exception as e:
+            print(f"  [ERR] {src.name}: {e}")
+            stats['errors'] += 1
+            
+    print("-" * 50)
+    print(f"Fertig: {stats['copied']} kopiert, {stats['skipped']} übersprungen.\n")
+
 
 def interactive_chat(rag: PhotoRAG, min_score: float = 0.3):
     """Interaktiver Chat-Modus."""
@@ -287,14 +324,22 @@ if __name__ == '__main__':
     parser.add_argument('--top-k', type=int, default=5, help='Anzahl der Ergebnisse (Standard: 5)')
     parser.add_argument('--chat', action='store_true', help='Interaktiver Chat-Modus')
     parser.add_argument('--min-score', type=float, default=0.3, help='Minimaler Ähnlichkeits-Score (0.0-1.0, Standard: 0.3, höher = strenger)')
+    
+    # NEUE ARGUMENTE FÜR KOPIER-FUNKTION
+    parser.add_argument('--copy-to', type=str, help='Kopiere Ergebnisse in diesen Ordner')
+    parser.add_argument('--use-target-from-env', action='store_true', help='Kopiere Ergebnisse nach PHOTO_TARGET/<Suchbegriff>')
+
     args = parser.parse_args()
     
     rag = PhotoRAG()
     
     if args.build_vector_db:
         rag.build_vector_db(source_dir=args.source)
+        
     elif args.query:
+        # 1. Suchen
         results = rag.search(args.query, top_k=args.top_k, min_score=args.min_score)
+        
         if not results:
             print(f"\n❌ Keine Ergebnisse über Score {args.min_score}.")
             print(f"💡 Tipp: Versuche niedrigeren --min-score (z.B. --min-score 0.2)")
@@ -303,6 +348,20 @@ if __name__ == '__main__':
             for i, r in enumerate(results, 1):
                 print(f"{i}. {r['path']}")
                 print(f"   Score: {r['score']:.3f}")
+            
+            # 2. Kopieren (Optional)
+            target_path = None
+            if args.copy_to:
+                target_path = args.copy_to
+            elif args.use_target_from_env:
+                if TARGET:
+                    target_path = TARGET
+                else:
+                    print("\n[ERR] --use-target-from-env gewählt, aber PHOTO_TARGET nicht in .env gefunden.")
+            
+            if target_path:
+                copy_search_results(results, target_path, args.query)
+
     elif args.chat:
         interactive_chat(rag, min_score=args.min_score)
     else:

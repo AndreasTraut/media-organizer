@@ -30,3 +30,10 @@ photo_vectors_mapping.json
 .vscode/
 .idea/
 *.code-workspace
+
+# Demo images: ignore any files inside these demo folders (keep folders on disk)
+demo_bilder/alle_bilder/*
+demo_bilder/known_faces/*
+demo_bilder/SCENES_LOG.txt
+photo_vectors_mapping.json
+photo_vectors_mappings.json

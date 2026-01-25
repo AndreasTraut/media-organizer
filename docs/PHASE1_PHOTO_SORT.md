@@ -113,6 +113,7 @@ PHOTO_TARGET=\\NAS\Fotos\Sortiert
 
 ### Testing
 
+- ✅ **Nutze Demo-Daten:** Du kannst dir mit `python tools/fetch_demo_pictures.py` einen Ordner mit >1000 Bildern generieren lassen, um die Sortierung gefahrlos zu testen (siehe [Tools](../tools/TOOLS.md)).
 - ✅ **Teste mit Sample-Ordner:** Verwende eine Kopie statt Originaldaten
 - ✅ **Starte mit wenigen Dateien:** Validiere Logik vor großem Batch-Lauf
 - ✅ **Prüfe Zielordner:** Kontrolliere Struktur und Vollständigkeit nach Testlauf

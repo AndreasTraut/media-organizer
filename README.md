@@ -31,7 +31,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 3. [Tech Stack](#-tech-stack)
    - [Phase 1: Basis-Module (Photo Sort)](#phase-1-basis-module-photo-sort)
    - [Phase 2: Intelligence-Module (Photo Intelligence)](#phase-2-intelligence-module-photo-intelligence)
-
+4. [Tools & Hilfsskripte](TOOLS.md)
 ---
 
 ## 🤖 KI-gestützter Entwicklungsworkflow
@@ -178,7 +178,7 @@ Die Intelligence-Module nutzen KI **zur Laufzeit** für unstrukturierte Datenana
 
 - **CLIP-Embeddings** ermöglichen Suche nach Inhalten statt nur Metadaten
 - **FAISS Vector-DB** für schnelle Ähnlichkeitssuche in großen Sammlungen
-- **Beispiel-Query:** *"Strand im Sommer"* → System findet passende Bilder ohne explizite Tags
+- **Beispiel-Query:** *"beach in summer"* → System findet passende Bilder ohne explizite Tags
 - **LLM-Integration:** Interaktiver GPT-4o Chatbot
   - *"Zeige mir Fotos mit Familie aus 2024"*
   - Kontextuelles Verständnis der gesamten Bildersammlung
@@ -217,7 +217,7 @@ python phase2_photo_intelligence/photo_insights.py --find-person --use-target-fr
 python phase2_photo_intelligence/photo_insights.py --find-person --copy-to "C:\Gefundene\Personen" --threshold 0.85
 
 # Semantische Suche
-python phase2_photo_intelligence/photo_rag.py --query "Strand im Sommer"
+python phase2_photo_intelligence/photo_rag.py --query "beach in summer"
 
 # Interaktiver Chat-Modus
 python phase2_photo_intelligence/photo_rag.py --chat
@@ -231,7 +231,7 @@ Mit Phase 2 hat sich der media-organizer von einem reinen Sortier-Tool zu einer 
 
 **Personen wiederfinden:** Du fragst dich, auf welchen Bildern Oma zu sehen ist? DeepFace vergleicht Gesichter und liefert dir alle Treffer. Keine Tags nötig, keine Vorbereitung — einfach ein Referenzbild und los.
 
-**Momente beschreiben:** Statt Dateinamen zu durchforsten, beschreibst du einfach, was du suchst: *"Strand im Sommer"*, *"Geburtstagskuchen"*, *"Wanderung in den Bergen"*. CLIP versteht den Inhalt deiner Bilder und findet passende Treffer.
+**Momente beschreiben:** Statt Dateinamen zu durchforsten, beschreibst du einfach, was du suchst: *"beach in summer"*, *"Geburtstagskuchen"*, *"Wanderung in den Bergen"*. CLIP versteht den Inhalt deiner Bilder und findet passende Treffer.
 
 **Natürlich kommunizieren:** Im Chat-Modus unterhältst du dich mit deiner Bildersammlung. GPT-4o kombiniert deine Fragen mit den RAG-Ergebnissen und antwortet kontextuell: *"Die meisten Familienfotos aus 2024 wurden im August aufgenommen..."*
 

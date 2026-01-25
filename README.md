@@ -31,7 +31,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 3. [Tech Stack](#-tech-stack)
    - [Phase 1: Basis-Module (Photo Sort)](#phase-1-basis-module-photo-sort)
    - [Phase 2: Intelligence-Module (Photo Intelligence)](#phase-2-intelligence-module-photo-intelligence)
-4. [Tools & Hilfsskripte](TOOLS.md)
+4. [Tools & Hilfsskripte](tools/TOOLS.md)
 ---
 
 ## 🤖 KI-gestützter Entwicklungsworkflow

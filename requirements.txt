@@ -1,0 +1,34 @@
+# Dependencies für Streamlit Cloud Deployment
+# Diese Datei wird von Streamlit Cloud automatisch erkannt und installiert
+
+# --- GUI & System ---
+streamlit
+python-dotenv
+
+# --- Phase 1: Basis Bildverarbeitung ---
+Pillow
+
+# --- Phase 2: Mathematik & Daten ---
+numpy
+scipy
+scikit-learn
+
+# --- Phase 2: Computer Vision & Gesichter ---
+opencv-python
+deepface
+fer==22.5.1
+tf-keras
+
+# --- Phase 2: KI-Frameworks & Modelle ---
+torch
+torchvision
+transformers
+
+# --- Phase 2: Vektoren & Datenbanken ---
+faiss-cpu
+chromadb
+
+# --- Phase 2: Text & Spezielles ---
+openai
+ftfy
+git+https://github.com/openai/CLIP.git

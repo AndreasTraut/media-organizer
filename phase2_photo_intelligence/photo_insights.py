@@ -460,7 +460,7 @@ def find_images_with_person(index_path='insights_index.json', known_face_dir=Non
     return {name: sorted(list(paths)) for name, paths in results.items()}
 
 
-def copy_found_images(results: dict, target_dir: str, flatten: bool = False):
+def copy_found_images(results: dict, target_dir: str, flatten: bool = False, emotion_folder: str = None):
     """
     Kopiert gefundene Bilder in einen Zielordner.
     
@@ -469,12 +469,19 @@ def copy_found_images(results: dict, target_dir: str, flatten: bool = False):
         target_dir: Zielverzeichnis
         flatten: Wenn True, alle Bilder flach in Personen-Ordner;
                  wenn False, Original-Unterordner beibehalten
+        emotion_folder: Optional: Emotions-Unterordner (z.B. "happy", "sad")
+                        Wenn gesetzt, wird Struktur: target_dir/emotion/Person/...
     
     Returns:
         Dictionary mit Kopier-Statistiken
     """
     import shutil
     target = Path(target_dir)
+    
+    # Wenn Emotions-Filter aktiv, erstelle Emotions-Unterordner
+    if emotion_folder:
+        target = target / emotion_folder
+    
     stats = {'total': 0, 'copied': 0, 'skipped': 0, 'errors': 0}
     
     for person_name, image_paths in results.items():
@@ -534,6 +541,8 @@ if __name__ == '__main__':
     parser.add_argument('--use-target-from-env', action='store_true', help='Use PHOTO_TARGET from .env as copy destination (creates GefundenePersonen subfolder automatically)')
     parser.add_argument('--flatten', action='store_true', help='Put all images directly in person folder (no subfolders)')
     parser.add_argument('--threshold', type=float, default=0.85, help='Cosine similarity threshold for face matching (0.0-1.0, default: 0.85, higher = stricter)')
+    parser.add_argument('--emotion', type=str, default=None, help='Filter results by emotion (e.g., happy, sad, angry, neutral, fear, surprise, disgust)')
+        
     args = parser.parse_args()
     
     # Auto-set copy-to from env if requested
@@ -585,11 +594,33 @@ if __name__ == '__main__':
             print(f"[INFO] Threshold: {args.threshold} (hoeher = strenger)")
             res = find_images_with_person(index_path=args.index_path, known_face_dir=args.find_person, threshold=args.threshold)
             
+            # Filter nach Emotion, falls gewuenscht
+            if args.emotion:
+                print(f"[INFO] Filtere Ergebnisse nach Emotion: {args.emotion}")
+                filtered_res = {}
+                index = load_index(args.index_path)
+                
+                for person, paths in res.items():
+                    matching_paths = []
+                    for p in paths:
+                        # Pruefe, ob das Bild im Index die gewuenschte Emotion hat
+                        img_data = index.get(p, {})
+                        emotions = img_data.get('emotions', {})
+                        # Wenn die gewaehlte Emotion die hoechste ist oder ueber 30% liegt
+                        if emotions.get(args.emotion, 0) > 30:
+                            matching_paths.append(p)
+                    
+                    if matching_paths:
+                        filtered_res[person] = matching_paths
+                
+                res = filtered_res
+                print(f"[INFO] Nach Emotions-Filter: {sum(len(paths) for paths in res.values())} Bilder")
+            
             # Wenn --copy-to angegeben, Bilder kopieren
             if args.copy_to:
                 print(f"\n[COPY] Kopiere gefundene Bilder nach: {args.copy_to}")
                 print("-" * 50)
-                stats = copy_found_images(res, args.copy_to, flatten=args.flatten)
+                stats = copy_found_images(res, args.copy_to, flatten=args.flatten, emotion_folder=args.emotion)
                 print("-" * 50)
                 print(f"[DONE] Zusammenfassung: {stats['copied']} kopiert, {stats['skipped']} uebersprungen, {stats['errors']} Fehler")
             else:

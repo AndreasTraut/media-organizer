@@ -167,7 +167,7 @@ Die Intelligence-Module nutzen KI **zur Laufzeit** für unstrukturierte Datenana
 | Entitäten extrahieren | Face Recognition + Object Detection | `phase2_photo_intelligence/photo_insights.py` |
 | Gesichtsanalyse | DeepFace Integration | `phase2_photo_intelligence/photo_insights.py` |
 | **In welchen Bildern ist Person A?** | **Personensuche mit `--find-person` + `--copy-to`** | `phase2_photo_intelligence/photo_insights.py` |
-| Emotionale Zustände | FER (Facial Expression Recognition) | `phase2_photo_intelligence/photo_insights.py` |
+| Emotionale Zustände | FER (Facial Expression Recognition) + Emotions-Filter (`--emotion`) | `phase2_photo_intelligence/photo_insights.py` |
 | Bilder in Embeddings umwandeln | CLIP-Embeddings + FAISS Vector-DB | `phase2_photo_intelligence/photo_rag.py` |
 | RAG auf Bilderbasis | Semantische Suche + Kontext-Engine | `phase2_photo_intelligence/photo_rag.py` |
 | LLM-Integration | GPT-4o Chat-Interface | `phase2_photo_intelligence/photo_rag.py` |
@@ -215,6 +215,9 @@ python phase2_photo_intelligence/photo_insights.py --find-person --use-target-fr
 
 # Personensuche MIT Kopieren: Expliziter Pfad
 python phase2_photo_intelligence/photo_insights.py --find-person --copy-to "C:\Gefundene\Personen" --threshold 0.85
+
+# Personensuche mit Emotions-Filter: Nur glückliche Momente
+python phase2_photo_intelligence/photo_insights.py --find-person demo_bilder/known_faces --emotion happy --copy-to ausgabe
 
 # Semantische Suche
 python phase2_photo_intelligence/photo_rag.py --query "beach in summer"

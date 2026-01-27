@@ -139,6 +139,36 @@ PHOTO_TARGET\GefundenePersonen\
 python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json --use-target-from-env --flatten --threshold 0.9
 ```
 
+**Emotions-Filter:**
+
+Du kannst die Personensuche zusätzlich nach Emotionen filtern. Das System analysiert den Gesichtsausdruck in jedem Bild und behält nur Bilder, bei denen die gewünschte Emotion über 30% Konfidenz liegt.
+
+```powershell
+# Finde nur glückliche Momente
+python phase2_photo_intelligence/photo_insights.py --find-person demo_bilder/known_faces --emotion happy --copy-to ausgabe
+
+# Weitere Emotions-Filter
+python phase2_photo_intelligence/photo_insights.py --find-person --emotion sad --use-target-from-env
+python phase2_photo_intelligence/photo_insights.py --find-person --emotion neutral --copy-to ausgabe --threshold 0.9
+```
+
+**Verfügbare Emotionen:**
+
+| Emotion | Beschreibung | Englisch |
+|---------|--------------|----------|
+| `happy` | Glücklich, lächelnd, fröhlich | happy |
+| `sad` | Traurig, bedrückt, niedergeschlagen | sad |
+| `angry` | Wütend, verärgert, aggressiv | angry |
+| `fear` | Ängstlich, verängstigt, besorgt | fear |
+| `surprise` | Überrascht, erstaunt, verblüfft | surprise |
+| `neutral` | Neutral, ausdruckslos, emotionslos | neutral |
+| `disgust` | Angeekelt, abgestoßen | disgust |
+
+> 💡 **Tipp:** Der Emotions-Filter eignet sich besonders für:
+> - Familienfotos mit glücklichen Momenten (`happy`)
+> - Authentische Porträts ohne gestelltes Lächeln (`neutral`)
+> - Emotionale Analyse über Zeiträume (z.B. Urlaubsfotos vs. Alltag)
+
 #### Wichtige Hinweise
 
 | Thema | Erklärung |

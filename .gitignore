@@ -26,6 +26,9 @@ photo_vectors_mapping.json
 *.index
 *.faiss
 
+# Ausgabe-Ordner: Gefundene/kopierte Bilder (personenbezogen)
+ausgabe/
+
 # IDE-spezifische Ordner
 .vscode/
 .idea/

@@ -36,27 +36,49 @@ def get_media_date(file_path: Path) -> datetime.date:
     return datetime.fromtimestamp(file_path.stat().st_mtime).date()
 
 def organize_photos(source_dir: str, target_dir: str):
-    """Verschiebt Dateien in Datums-Ordner (YYYY-MM-DD)."""
+    """Kopiert Dateien in Datums-Ordner (YYYY-MM-DD)."""
     source = Path(source_dir)
     target = Path(target_dir)
 
     if not source.exists():
         print(f"Quelle nicht gefunden: {source}")
         return
+    
+    # Zähler für Statistik
+    total_files = 0
+    copied_files = 0
+    skipped_files = 0
 
-    for file_path in source.iterdir():
-        if file_path.is_file():
+    # Rekursiv alle Dateien durchsuchen (nicht nur im Root)
+    for file_path in source.rglob('*'):
+        if file_path.is_file() and file_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.tiff', '.mp4', '.mov']:
+            total_files += 1
             date = get_media_date(file_path)
             folder_name = date.strftime("%Y-%m-%d")
             
             dest_folder = target / folder_name
             dest_folder.mkdir(parents=True, exist_ok=True)
             
+            dest_file = dest_folder / file_path.name
+            
+            # Prüfe ob Datei bereits existiert
+            if dest_file.exists():
+                print(f"Übersprungen (existiert bereits): {file_path.name}")
+                skipped_files += 1
+                continue
+            
             try:
-                shutil.move(str(file_path), str(dest_folder / file_path.name))
+                shutil.copy2(str(file_path), str(dest_file))
                 print(f"Erfolg: {file_path.name} -> {folder_name}")
+                copied_files += 1
             except Exception as e:
-                print(f"Fehler beim Verschieben von {file_path.name}: {e}")
+                print(f"Fehler beim Kopieren von {file_path.name}: {e}")
+    
+    # Statistik ausgeben
+    print(f"\n📊 Statistik:")
+    print(f"   Gefunden: {total_files} Dateien")
+    print(f"   Kopiert: {copied_files}")
+    print(f"   Übersprungen: {skipped_files}")
 
 if __name__ == "__main__":
     # Pfade werden sicher aus der .env Datei oder Umgebungsvariablen gezogen

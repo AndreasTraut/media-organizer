@@ -31,7 +31,8 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 3. [Tech Stack](#-tech-stack)
    - [Phase 1: Basis-Module (Photo Sort)](#phase-1-basis-module-photo-sort)
    - [Phase 2: Intelligence-Module (Photo Intelligence)](#phase-2-intelligence-module-photo-intelligence)
-4. [Tools & Hilfsskripte](TOOLS.md)
+4. [🖥️ Streamlit GUI](#%EF%B8%8F-streamlit-gui---grafische-oberfl%C3%A4che)
+5. [Tools & Hilfsskripte](TOOLS.md)
 ---
 
 ## 🤖 KI-gestützter Entwicklungsworkflow
@@ -244,7 +245,70 @@ Mit Phase 2 hat sich der media-organizer von einem reinen Sortier-Tool zu einer 
 
 ---
 
-## 🛠 Tech Stack
+## �️ Streamlit GUI — Grafische Oberfläche
+
+> 🎮 **[Detaillierte Dokumentation: Streamlit App](docs/APP.md)**  
+> 💾 **Modul:** `app.py`  
+> 🚀 **Quick Start:** `streamlit run app.py`
+
+**Für alle, die ohne Code-Kenntnisse arbeiten möchten:** Eine browserbasierte GUI, die alle Phasen des media-organizer vereint.
+
+### 🎯 Was kann die GUI?
+
+**💻 Einfache Bedienung — wie eine normale Windows-Anwendung**
+
+Statt Befehle in eine schwarze Kommandozeile zu tippen, öffnest du einfach deinen Browser (wie Chrome oder Firefox). Die App sieht aus wie eine moderne Webseite mit Buttons, Schiebereglern und Eingabefeldern — alles selbsterklärend.
+
+**🏛️ Vier übersichtliche Bereiche (Tabs) für verschiedene Aufgaben:**
+
+1. **📁 Fotos sortieren** — Du gibst zwei Ordner an: wo deine unsortierten Bilder liegen und wo sie hin sollen. Ein Klick auf "Sortierung starten" und fertig — das Tool organisiert alles nach Aufnahmedatum (z.B. 2024-12-25, 2025-01-15, etc.).
+
+2. **🧠 Index aufbauen** — Hier analysiert die KI deine Bilder: Wer ist auf den Fotos? Welche Emotionen zeigen die Gesichter? Diese Informationen werden in einer Datei gespeichert, damit du später schnell suchen kannst.
+
+3. **🔍 Personensuche** — Zeige der App ein paar Fotos von einer Person (z.B. Oma) und sie findet automatisch ALLE Bilder aus deiner Sammlung, auf denen diese Person zu sehen ist. Du kannst sogar nach Emotionen filtern: "Zeig mir nur die Bilder, wo Oma lacht."
+
+4. **💬 Bilder beschreiben statt suchen** — Schreibe einfach, was du suchst: "Strand im Sommer" oder "rotes Auto" — und die KI findet passende Bilder, ohne dass du vorher mühsam Tags setzen musstest.
+
+**⚙️ Einstellungen, die du selbst anpassen kannst:**
+
+- **Genauigkeit einstellen:** Mit einem Schieberegler wählst du, wie genau eine Übereinstimmung sein soll (z.B. bei Gesichtserkennung: streng = weniger Fehler, locker = mehr Treffer)
+- **Nach Stimmung filtern:** Wähle aus einer Liste: glücklich, traurig, wütend, neutral, etc.
+- **Anzahl der Ergebnisse:** Bestimme, wie viele Bilder dir angezeigt werden sollen (z.B. nur die 10 besten Treffer)
+- **Ordner auswählen:** Über normale Textfelder gibst du an, wo deine Bilder liegen
+
+**📈 Du siehst sofort, was passiert:**
+
+- **Fortschrittsbalken** zeigen dir, wie weit die Verarbeitung ist (wie beim Kopieren von Dateien in Windows)
+- **Statistiken** nach Abschluss: "Gefunden: 23 Bilder von 3 Personen"
+- **Fehlerprotokolle** falls etwas nicht klappt — in verständlicher Sprache, nicht in kryptischen Code-Meldungen
+
+### 🚀 Quick Start
+
+```bash
+# 1. Streamlit installieren (falls noch nicht vorhanden)
+pip install streamlit
+
+# Oder alle GUI-Requirements:
+pip install -r requirements-gui.txt
+
+# 2. App starten
+streamlit run app.py
+```
+
+Die App öffnet sich automatisch im Browser auf `http://localhost:8501`
+
+### 🎯 Warum Streamlit?
+
+- **Keine Web-Entwicklung nötig:** Reine Python-Datei, die sich in interaktive Webseiten verwandelt
+- **Schnelles Prototyping:** Von Kommandozeile zu GUI in Minuten statt Tagen
+- **Ideal für Data Science:** Perfekt für BI-Entwickler, die Dashboards statt CLI bevorzugen
+- **Teilen ohne Installation:** Kann später auf Streamlit Cloud oder Server deployed werden
+
+➡️ **[📚 Ausführliche Dokumentation mit Screenshots](docs/APP.md)**
+
+---
+
+## �🛠 Tech Stack
 
 ### Phase 1: Basis-Module (Photo Sort)
 

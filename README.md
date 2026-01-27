@@ -300,7 +300,17 @@ streamlit run app.py
 
 Die App öffnet sich automatisch im Browser auf `http://localhost:8501`
 
-### 🎯 Warum Streamlit?
+### � Online Demo
+
+**Wichtig:** Die App ist für den **lokalen Betrieb** konzipiert — alle Verarbeitungen (Personenerkennung, Sortierung, Emotionsanalyse) laufen direkt auf deinem Computer. Deine Bilder bleiben bei dir, nichts wird hochgeladen.
+
+Um ein **Look & Feel** zu bekommen, wie die Benutzeroberfläche aussieht und funktioniert, kannst du die Demo-Version testen:
+
+🔗 **[Live-Demo ausprobieren](https://andreastraut-media-organizer-app-3igcn2.streamlit.app/)**
+
+> ⚠️ **Hinweis:** Die Demo-Version läuft mit eingeschränkten Ressourcen und Beispieldaten. Für die Verarbeitung deiner eigenen Bildersammlung installiere die App lokal wie oben beschrieben.
+
+### �🎯 Warum Streamlit?
 
 - **Keine Web-Entwicklung nötig:** Reine Python-Datei, die sich in interaktive Webseiten verwandelt
 - **Schnelles Prototyping:** Von Kommandozeile zu GUI in Minuten statt Tagen

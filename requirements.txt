@@ -1,34 +1,31 @@
-# Dependencies für Streamlit Cloud Deployment
-# Diese Datei wird von Streamlit Cloud automatisch erkannt und installiert
-
 # --- GUI & System ---
-streamlit
-python-dotenv
+streamlit              # Das Framework für die grafische Oberfläche (Web-App)
+python-dotenv          # Zum Laden von Konfigurationen/Passwörtern aus der .env Datei
 
 # --- Phase 1: Basis Bildverarbeitung ---
-Pillow
+Pillow                 # Essenziell für Bildbearbeitung & Auslesen von EXIF-Metadaten
 
 # --- Phase 2: Mathematik & Daten ---
-numpy
-scipy
-scikit-learn
+numpy                  # Grundlegende numerische Berechnungen & Arrays
+scipy                  # Wissenschaftliche mathematische Funktionen
+scikit-learn           # Machine Learning Algorithmen (z.B. für Clustering)
 
 # --- Phase 2: Computer Vision & Gesichter ---
-opencv-python
-deepface
-fer==22.5.1
-tf-keras
+opencv-python          # Standard-Bibliothek für Computer Vision (Bildanalyse)
+deepface               # Deep Learning Framework speziell für Gesichtserkennung
+fer==22.5.1            # "Facial Expression Recognition" (Erkennt Emotionen)
+tf-keras               # Keras API Schnittstelle für TensorFlow Modelle
 
 # --- Phase 2: KI-Frameworks & Modelle ---
-torch
-torchvision
-transformers
+torch                  # PyTorch Framework (Basis für viele moderne KI-Modelle)
+torchvision            # Spezielle Datensätze & Transformationen für Bild-KI
+transformers           # Hugging Face Bibliothek (für moderne Transformer-Modelle)
 
 # --- Phase 2: Vektoren & Datenbanken ---
-faiss-cpu
-chromadb
+faiss-cpu              # Bibliothek für extrem schnelle Ähnlichkeitssuche
+chromadb               # Vektor-Datenbank zum Speichern von Bild-Embeddings
 
 # --- Phase 2: Text & Spezielles ---
-openai
-ftfy
-git+https://github.com/openai/CLIP.git
+openai                 # Schnittstelle zur OpenAI API (falls benötigt)
+ftfy                   # "Fixes Text For You" - Repariert kaputte Text-Encodings
+git+https://github.com/openai/CLIP.git # Das CLIP Modell von OpenAI (Bild-Text-Matching)

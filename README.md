@@ -28,10 +28,14 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
    - [Phase 1: Data Cleaning & Organisation (Dezember 2025)](#phase-1-data-cleaning--organisation-dezember-2025)
    - [Das Game-Changing Feedback](#-das-game-changing-feedback)
    - [Phase 2: Photo Intelligence Suite (Dezember 2025 - Januar 2026)](#phase-2-photo-intelligence-suite-dezember-2025---januar-2026)
-3. [Tech Stack](#-tech-stack)
+3. [Streamlit GUI — Grafische Oberfläche](#%EF%B8%8F-streamlit-gui--grafische-oberfläche)
+   - [Was kann die GUI?](#-was-kann-die-gui)
+   - [Quick Start](#-quick-start)
+   - [Warum Streamlit?](#-warum-streamlit)
+4. [Tech Stack](#-tech-stack)
    - [Phase 1: Basis-Module (Photo Sort)](#phase-1-basis-module-photo-sort)
    - [Phase 2: Intelligence-Module (Photo Intelligence)](#phase-2-intelligence-module-photo-intelligence)
-4. [Tools & Hilfsskripte](TOOLS.md)
+5. [Tools & Hilfsskripte](tools/TOOLS.md)
 ---
 
 ## 🤖 KI-gestützter Entwicklungsworkflow
@@ -244,7 +248,7 @@ Mit Phase 2 hat sich der media-organizer von einem reinen Sortier-Tool zu einer 
 
 ---
 
-## �️ Streamlit GUI — Grafische Oberfläche
+## 🖼️ Streamlit GUI — Grafische Oberfläche
 
 > 🎮 **[Detaillierte Dokumentation: Streamlit App](docs/APP.md)**  
 > 💾 **Modul:** `app.py`  
@@ -307,7 +311,7 @@ Die App öffnet sich automatisch im Browser auf `http://localhost:8501`
 
 ---
 
-## �🛠 Tech Stack
+## 🛠 Tech Stack
 
 ### Phase 1: Basis-Module (Photo Sort)
 

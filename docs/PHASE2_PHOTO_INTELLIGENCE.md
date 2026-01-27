@@ -35,6 +35,7 @@ Extrahiert strukturierte Intelligence-Daten aus unstrukturierten Bildern:
 - `numpy`, `json` — Standard-Libraries für numerische Berechnungen und Datenserialisierung
 
 **Konfiguration:** `PHOTO_SOURCE`, `KNOWN_FACES_DIR`, `insights_index.json`
+
 **Debugging:** Nutze `python tools/inspect_index.py`, um den generierten Index zu analysieren (siehe [Tools](../tools/TOOLS.md#magnifying_glass_tilted_left-inspect_indexpy)).
 
 ### 📊 Index-Aufbau
@@ -197,6 +198,7 @@ RAG-System (Retrieval-Augmented Generation) für semantische Bildsuche:
 - [Pillow](https://pillow.readthedocs.io/) — Bild-Loading und -Verarbeitung
 
 **Konfiguration:** `PHOTO_SOURCE`, `OPENAI_API_KEY` (optional), `photo_vectors.faiss`, `photo_vectors_mapping.json`
+
 **Debugging:** Nutze `python tools/inspect_index.py`, um den generierten Index zu analysieren (siehe [Tools](../tools/TOOLS.md#magnifying_glass_tilted_left-inspect_indexpy)).
 
 ---

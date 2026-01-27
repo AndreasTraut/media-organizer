@@ -1,3 +1,9 @@
+"""Lädt Szenen-Bilder (LoremFlickr) für RAG-System Tests.
+
+Related Scripts:
+- phase2_photo_intelligence/photo_rag.py (Semantische Bild-Suche mit CLIP)
+- phase2_photo_intelligence/photo_insights.py (Gesichts-/Emotions-Analyse)
+"""
 import os
 import time
 import requests

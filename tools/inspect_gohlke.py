@@ -4,7 +4,8 @@ inspect_gohlke.py
 Zweck: Manuelles Debugging-Tool.
 Es lädt den HTML-Quelltext der Webseite von Christoph Gohlke herunter und
 filtert ihn nach Zeilen, die "dlib" enthalten.
-
+Related Scripts:
+- tools/install_dlib_wheel.py (Automatische dlib-Installation)
 Das ist hilfreich, wenn 'install_dlib_wheel.py' fehlschlägt, um zu prüfen:
 1. Ist die Webseite erreichbar?
 2. Hat sich die Struktur der Webseite geändert?

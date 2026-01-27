@@ -1,3 +1,9 @@
+"""Lädt Demo-Bilder (LFW-Datensatz) für Phase 2 Tests.
+
+Related Scripts:
+- phase2_photo_intelligence/photo_insights.py (Index-Aufbau, Gesichtserkennung)
+- phase2_photo_intelligence/photo_rag.py (RAG-Suche)
+"""
 import os
 import shutil
 import numpy as np

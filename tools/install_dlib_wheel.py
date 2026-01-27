@@ -5,7 +5,10 @@ and installs it into the active venv. Prints progress and final status.
 Zweck: Dieses Skript automatisiert die schwierige dlib-Installation unter Windows.
 Es sucht auf der Webseite von Christoph Gohlke nach einer vor-kompilierten
 Wheel-Datei (.whl), die genau zur aktuellen Python-Version und Architektur passt.
-"""
+Related Files:
+- requirements-phase2.txt (Enthält dlib und face_recognition Dependencies)
+- tools/inspect_gohlke.py (Debugging bei Fehlern)
+- phase2_photo_intelligence/photo_insights.py (Nutzt DeepFace/dlib für Gesichtserkennung)"""
 import sys
 import sysconfig
 import platform

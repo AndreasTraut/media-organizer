@@ -21,6 +21,8 @@ Dieses Verzeichnis enthält Utility-Skripte für die Installation von Abhängigk
 
 ## 📦 `install_dlib_wheel.py`
 
+> 📦 **Implementierung:** Siehe [install_dlib_wheel.py](install_dlib_wheel.py)
+
 **Zweck:**
 Automatische Installation von `dlib` unter Windows durch Download der passenden Wheel-Datei von [Christoph Gohlkes Unofficial Binaries](https://www.lfd.uci.edu/~gohlke/pythonlibs/).
 
@@ -37,6 +39,8 @@ python tools/install_dlib_wheel.py
 ---
 
 ## 📸 `fetch_demo_pictures.py`
+
+> 📦 **Implementierung:** Siehe [fetch_demo_pictures.py](fetch_demo_pictures.py)
 
 **Zweck:**
 Erstellung einer legalen, reproduzierbaren Demo-Umgebung unter Verwendung des wissenschaftlichen Datensatzes "Labeled Faces in the Wild" (LFW).
@@ -75,6 +79,8 @@ demo_bilder/
 
 ## 🌄 `fetch_scene_images.py`
 
+> 📦 **Implementierung:** Siehe [fetch_scene_images.py](fetch_scene_images.py)
+
 **Zweck:**
 Erweiterung des Demo-Datensatzes um allgemeine Szenen und Objekte (z.B. Strand, Berge, Autos, Hunde), um die **semantische Suche** (`photo_rag.py`) zu testen.
 
@@ -103,6 +109,8 @@ python tools/fetch_scene_images.py
 
 ## 🔍 `inspect_index.py`
 
+> 📦 **Implementierung:** Siehe [inspect_index.py](inspect_index.py)
+
 **Zweck:**
 Analyse und Debugging des generierten `insights_index.json` mit Statistiken und Beispielen.
 
@@ -124,6 +132,8 @@ python tools/inspect_index.py
 ---
 
 ## 🌐 `inspect_gohlke.py`
+
+> 📦 **Implementierung:** Siehe [inspect_gohlke.py](inspect_gohlke.py)
 
 **Zweck:**
 Manuelle Inspektion der Gohlke-Website nach verfügbaren `dlib`-Wheels, falls das automatische Installations-Skript fehlschlägt.

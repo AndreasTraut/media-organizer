@@ -4,7 +4,9 @@ inspect_index.py
 Zweck: Diagnose-Tool für den 'insights_index.json'.
 Dieser Index wird von 'photo_insights.py' (Phase 2) erstellt und enthält 
 alle KI-Analyse-Ergebnisse (Gesichter, Emotionen, Embeddings).
-
+Related Scripts:
+- phase2_photo_intelligence/photo_insights.py (Index-Erstellung)
+- phase2_photo_intelligence/photo_rag.py (Nutzt den Index für RAG)
 Dieses Skript hilft zu verstehen:
 1. Wie viele Bilder wurden insgesamt indexiert?
 2. Bei wie vielen Bildern wurden Gesichter/Emotionen gefunden?

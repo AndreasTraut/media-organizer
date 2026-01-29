@@ -147,7 +147,7 @@ Nach der Veröffentlichung erhielt ich [folgenden wertvollen Kommentar aus der C
 
 ### Phase 2: Photo Intelligence Suite (Dezember 2025 - Januar 2026)
 
-> 🚀 **LinkedIn Post 2: Die Evolution zur Intelligence Suite](https://www.linkedin.com/posts/activity-7422210014422913024-BFM1?utm_source=share&utm_medium=member_android&rcm=ACoAADWo6UkB3Ls-cknBjJp65Pr39uBAnhlOw_A)**  
+> 🚀 **[LinkedIn Post 2: Die Evolution zur Intelligence Suite](https://www.linkedin.com/posts/activity-7422210014422913024-BFM1?utm_source=share&utm_medium=member_android&rcm=ACoAADWo6UkB3Ls-cknBjJp65Pr39uBAnhlOw_A)**  
 > 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  
 > 🧠 **[Detaillierte Dokumentation: Phase 2 - Photo Intelligence](docs/PHASE2_PHOTO_INTELLIGENCE.md)**
 

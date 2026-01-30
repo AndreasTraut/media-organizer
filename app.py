@@ -478,16 +478,19 @@ with st.sidebar:
     **Phase 1: Photo Sort**
     - EXIF-basierte Sortierung
     - Dateiname-Fallback
+    - 📖 [Dokumentation](https://github.com/AndreasTraut/media-organizer/blob/main/docs/PHASE1_PHOTO_SORT.md)
     
     **Phase 2: Photo Intelligence**
     - Gesichtserkennung (DeepFace)
     - Emotionsanalyse (FER)
     - Semantische Suche (CLIP + FAISS)
+    - 📖 [Dokumentation](https://github.com/AndreasTraut/media-organizer/blob/main/docs/PHASE2_PHOTO_INTELLIGENCE.md)
     
     ---
     
     **Entwickelt von:** Andreas Traut  
-    [LinkedIn](https://www.linkedin.com/in/andreas-traut-89340/)
+    💼 [LinkedIn](https://www.linkedin.com/in/andreas-traut-89340/)  
+    💾 [GitHub Repository](https://github.com/AndreasTraut/media-organizer)
     """)
     
     st.divider()
@@ -495,8 +498,8 @@ with st.sidebar:
     # Zeige Umgebungsvariablen
     st.caption("📋 Aktuelle Einstellungen:")
     if os.getenv("PHOTO_SOURCE"):
-        st.code(f"PHOTO_SOURCE={os.getenv('PHOTO_SOURCE')}")
+        st.code(f"PHOTO_SOURCE=\n{os.getenv('PHOTO_SOURCE')}", language="text")
     if os.getenv("PHOTO_TARGET"):
-        st.code(f"PHOTO_TARGET={os.getenv('PHOTO_TARGET')}")
+        st.code(f"PHOTO_TARGET=\n{os.getenv('PHOTO_TARGET')}", language="text")
     if os.getenv("KNOWN_FACES_DIR"):
-        st.code(f"KNOWN_FACES_DIR={os.getenv('KNOWN_FACES_DIR')}")
+        st.code(f"KNOWN_FACES_DIR=\n{os.getenv('KNOWN_FACES_DIR')}", language="text")

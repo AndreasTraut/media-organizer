@@ -300,6 +300,10 @@ streamlit run app.py
 
 Die App öffnet sich automatisch im Browser auf `http://localhost:8501`
 
+**🐳 DevContainer - Die einfachste Methode:** Nutze die vorkonfigurierte DevContainer-Umgebung – alles funktioniert out-of-the-box ohne manuelle Dependency-Installation.
+
+**➡️ [Ausführliche DevContainer-Anleitung](tools/TOOLS.md#5-entwicklungsumgebung-mit-devcontainer-optional-aber-empfohlen)**
+
 ### � Online Demo
 
 **Wichtig:** Die App ist für den **lokalen Betrieb** konzipiert — alle Verarbeitungen (Personenerkennung, Sortierung, Emotionsanalyse) laufen direkt auf deinem Computer. Deine Bilder bleiben bei dir, nichts wird hochgeladen.
@@ -321,7 +325,14 @@ Um ein **Look & Feel** zu bekommen, wie die Benutzeroberfläche aussieht und fun
 
 ---
 
-## 🛠 Tech Stack
+
+
+
+
+
+---
+
+## �🛠 Tech Stack
 
 ### Phase 1: Basis-Module (Photo Sort)
 

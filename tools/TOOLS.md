@@ -203,6 +203,129 @@ python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --top-k 
 
 ---
 
+### 5. Entwicklungsumgebung mit DevContainer (Optional, aber empfohlen)
+
+#### Was ist ein DevContainer?
+
+Ein **DevContainer** ist eine standardisierte Entwicklungsumgebung basierend auf Docker, die direkt in VS Code und GitHub Codespaces funktioniert. Er definiert das komplette Setup (Python-Version, Dependencies, Tools) in einer Konfigurationsdatei.
+
+#### Warum DevContainer nutzen?
+
+**🚀 Für dieses Projekt besonders relevant:**
+
+| Vorteil | Bedeutung für Media Organizer |
+|---------|-------------------------------|
+| **Reproduzierbarkeit** | Jeder Entwickler/Tester hat exakt die gleiche Umgebung |
+| **Komplexe Dependencies** | Phase 2 Dependencies (DeepFace, FAISS, CLIP) sind unter Windows schwierig – im Container einfach |
+| **Windows/Linux Unterschiede** | DevContainer garantiert Linux-Umgebung (keine CMake/C++ Build Tools nötig) |
+| **Community-Testing** | LinkedIn-Community kann direkt in GitHub Codespaces testen ohne lokale Installation |
+| **Quick Start** | Von 0 auf lauffähig in ~2 Minuten statt 30+ Minuten manuelles Setup |
+
+**💡 Konkrete Vorteile:**
+
+- ✅ **Keine dlib-Probleme:** Unter Windows ist `dlib` schwierig zu installieren (CMake, C++ Build Tools) – im DevContainer läuft es out-of-the-box
+- ✅ **Keine Versions-Konflikte:** Isolierte Umgebung verhindert Konflikte mit anderen Python-Projekten
+- ✅ **Automatischer Start:** Streamlit-App startet automatisch nach Container-Build
+- ✅ **Identische CI/CD Umgebung:** Gleiche Umgebung wie in Production/Testing
+
+#### Wie nutzen?
+
+**Variante A: In GitHub Codespaces (Cloud-basiert)**
+
+1. Öffne das Repository auf GitHub
+2. Klicke auf **Code** → **Codespaces** → **Create codespace on main**
+3. Warte ~2-3 Minuten (automatische Installation)
+4. Streamlit-App öffnet sich automatisch im Browser
+
+```powershell
+# Keine Installation nötig! Alles automatisch.
+# Nach Container-Start ist die App unter Port 8501 erreichbar
+```
+
+**Variante B: Lokal mit VS Code Dev Containers Extension**
+
+1. Installiere [Docker Desktop](https://www.docker.com/products/docker-desktop/) für Windows
+2. Installiere VS Code Extension: **Dev Containers** (ms-vscode-remote.remote-containers)
+3. Öffne das Projekt in VS Code
+4. Drücke `F1` → **Dev Containers: Reopen in Container**
+5. Warte auf Container-Build (~5-10 Min beim ersten Mal)
+
+```powershell
+# Container baut sich automatisch mit allen Dependencies
+# .devcontainer/devcontainer.json definiert das Setup
+```
+
+#### Was passiert im DevContainer?
+
+Der Container führt automatisch folgende Schritte aus:
+
+```json
+// Aus .devcontainer/devcontainer.json
+
+// 1. Python 3.11 Base Image laden
+"image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm"
+
+// 2. Alle Dependencies installieren (Phase 1 + 2 + GUI)
+"updateContentCommand": "pip3 install --user -r requirements-gui.txt"
+
+// 3. Streamlit App automatisch starten
+"postAttachCommand": "streamlit run app.py --server.headless true"
+
+// 4. Port 8501 automatisch weiterleiten
+"forwardPorts": [8501]
+```
+
+**Resultat:**
+- ✅ Python 3.11 installiert
+- ✅ Alle Dependencies aus `requirements-gui.txt` installiert (inkl. DeepFace, FAISS, CLIP)
+- ✅ Streamlit-App läuft auf Port 8501
+- ✅ VS Code Extensions (Python, Pylance, Jupyter) aktiviert
+- ✅ Git konfiguriert für Commits
+
+#### Wann solltest du DevContainer nutzen?
+
+**Nutze DevContainer, wenn:**
+- ✅ Du unter **Windows** entwickelst (vermeidet dlib-Kompilierung)
+- ✅ Du das Projekt **jemandem zeigen** willst (Codespaces = 1-Klick-Demo)
+- ✅ Du **schnell starten** willst ohne Dependencies manuell zu installieren
+- ✅ Du **mehrere Projekte** hast und Versions-Konflikte vermeiden willst
+
+**Nutze lokale Installation, wenn:**
+- ⚠️ Du kein Docker installieren kannst/willst
+- ⚠️ Du sehr limitierte Internet-Bandbreite hast (Container-Download ~2GB)
+- ⚠️ Du bereits ein funktionierendes lokales Setup hast
+
+#### Typischer DevContainer-Workflow
+
+```powershell
+# 1. Repository klonen
+git clone https://github.com/AndreasTraut/media-organizer.git
+cd media-organizer
+
+# 2. In VS Code öffnen
+code .
+
+# 3. DevContainer starten (F1 → "Reopen in Container")
+# ... Container baut sich ...
+# ... Dependencies werden installiert ...
+# ... Streamlit startet automatisch ...
+
+# 4. Browser öffnet sich mit Streamlit-GUI auf http://localhost:8501
+# ✅ Fertig! Keine manuelle Installation nötig.
+```
+
+**Debugging im DevContainer:**
+
+```powershell
+# Terminal im Container öffnen (automatisch in VS Code verfügbar)
+# Hier kannst du normale Python-Befehle ausführen:
+
+python phase2_photo_intelligence/photo_insights.py --build-index
+python tools/fetch_demo_pictures.py
+```
+
+---
+
 ## 📋 Abhängigkeiten
 
 Die Skripte nutzen größtenteils Python-Standard-Bibliotheken (`urllib`, `json`, `subprocess`).

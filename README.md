@@ -59,7 +59,7 @@ In **Phase 1** (`phase1_photo_sort/photo_sort.py`) wurde GitHub Copilot eingeset
 **Phase 2** (`phase2_photo_intelligence/`) markiert den Paradigmenwechsel: Hier wird KI **zur Laufzeit** eingesetzt. CLIP-Embeddings ermöglichen semantische Bildsuche, DeepFace und FER analysieren Gesichter und Emotionen, GPT-4o versteht natürlichsprachliche Queries, und FAISS orchestriert die Vector-Suche über 12.000+ Fotos. Die Evolution ist komplett: Von "KI hilft beim Programmieren" zu "KI analysiert meine Daten zur Laufzeit".
 
 > ➡️ **Details siehe:** [Phase 2 in Projekt-Evolution](#phase-2-photo-intelligence-suite-dezember-2025---januar-2026)  
-> 🚀 **LinkedIn Post 2: Die Evolution zur Intelligence Suite** (coming soon)  
+> 🚀 **[LinkedIn Post 2: Die Evolution zur Intelligence Suite](https://www.linkedin.com/posts/activity-7422210014422913024-BFM1?utm_source=share&utm_medium=member_android&rcm=ACoAADWo6UkB3Ls-cknBjJp65Pr39uBAnhlOw_A)**  
 > 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  
 
 
@@ -147,7 +147,7 @@ Nach der Veröffentlichung erhielt ich [folgenden wertvollen Kommentar aus der C
 
 ### Phase 2: Photo Intelligence Suite (Dezember 2025 - Januar 2026)
 
-> 🚀 **LinkedIn Post 2: Die Evolution zur Intelligence Suite** (coming soon)  
+> 🚀 **[LinkedIn Post 2: Die Evolution zur Intelligence Suite](https://www.linkedin.com/posts/activity-7422210014422913024-BFM1?utm_source=share&utm_medium=member_android&rcm=ACoAADWo6UkB3Ls-cknBjJp65Pr39uBAnhlOw_A)**  
 > 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  
 > 🧠 **[Detaillierte Dokumentation: Phase 2 - Photo Intelligence](docs/PHASE2_PHOTO_INTELLIGENCE.md)**
 

@@ -211,31 +211,28 @@ Ein **DevContainer** ist eine standardisierte Entwicklungsumgebung basierend auf
 
 #### Warum DevContainer nutzen?
 
-**🚀 Für dieses Projekt besonders relevant:**
+Warum DevContainer für dieses Projekt ein Game-Changer sind
+Für den Media Organizer bietet der Einsatz von DevContainers entscheidende Vorteile, die weit über reine Bequemlichkeit hinausgehen. Die größte Herausforderung bei diesem Projekt liegt in den komplexen Abhängigkeiten der "Phase 2" (KI-Analyse). Bibliotheken wie DeepFace, FAISS und insbesondere dlib benötigen unter Windows oft eine aufwändige manuelle Einrichtung von C++ Build Tools und CMake. Ohne diese Vorarbeit scheitert die Installation häufig.
 
-| Vorteil | Bedeutung für Media Organizer |
-|---------|-------------------------------|
-| **Reproduzierbarkeit** | Jeder Entwickler/Tester hat exakt die gleiche Umgebung |
-| **Komplexe Dependencies** | Phase 2 Dependencies (DeepFace, FAISS, CLIP) sind unter Windows schwierig – im Container einfach |
-| **Windows/Linux Unterschiede** | DevContainer garantiert Linux-Umgebung (keine CMake/C++ Build Tools nötig) |
-| **Community-Testing** | LinkedIn-Community kann direkt in GitHub Codespaces testen ohne lokale Installation |
-| **Quick Start** | Von 0 auf lauffähig in ~2 Minuten statt 30+ Minuten manuelles Setup |
+Der DevContainer löst dieses Problem radikal, indem er eine standardisierte Linux-Umgebung bereitstellt, in der diese Pakete nahtlos funktionieren. Das eliminiert die technische Einstiegshürde komplett: Es ist keine lokale Konfiguration von Compilern oder Python-Pfaden nötig.
 
-**💡 Konkrete Vorteile:**
-
-- ✅ **Keine dlib-Probleme:** Unter Windows ist `dlib` schwierig zu installieren (CMake, C++ Build Tools) – im DevContainer läuft es out-of-the-box
-- ✅ **Keine Versions-Konflikte:** Isolierte Umgebung verhindert Konflikte mit anderen Python-Projekten
-- ✅ **Automatischer Start:** Streamlit-App startet automatisch nach Container-Build
-- ✅ **Identische CI/CD Umgebung:** Gleiche Umgebung wie in Production/Testing
+Zudem öffnet dies das Projekt für eine breitere Community (z.B. Tester von LinkedIn). Durch die Integration mit GitHub Codespaces lässt sich die gesamte Anwendung mit einem einzigen Klick direkt im Browser starten. Anstatt 30 Minuten oder mehr mit der Fehlersuche bei der Installation zu verbringen, ist das System innerhalb von etwa zwei Minuten voll einsatzbereit. Dies garantiert absolute Reproduzierbarkeit: Egal ob auf einem lokalen Windows-PC, einem Mac oder in der Cloud – jeder Nutzer hat exakt dieselbe, funktionierende Umgebung.
 
 #### Wie nutzen?
 
 **Variante A: In GitHub Codespaces (Cloud-basiert)**
 
-1. Öffne das Repository auf GitHub
-2. Klicke auf **Code** → **Codespaces** → **Create codespace on main**
-3. Warte ~2-3 Minuten (automatische Installation)
-4. Streamlit-App öffnet sich automatisch im Browser
+**1. Repository aufrufen**
+Das Projekt-Repository auf der GitHub-Webseite öffnen.
+
+**2. Codespace erstellen**
+Die grüne Schaltfläche **Code** betätigen, zum Reiter **Codespaces** wechseln und die Option **Create codespace on main** auswählen.
+
+**3. Initialisierung abwarten**
+Der Cloud-Container wird automatisch bereitgestellt und konfiguriert. Dieser Vorgang nimmt ca. 2-3 Minuten in Anspruch.
+
+**4. Anwendung nutzen**
+Nach Abschluss der Installation startet die Streamlit-App automatisch und öffnet sich in einem neuen Browser-Tab oder im Vorschaufenster.
 
 ```powershell
 # Keine Installation nötig! Alles automatisch.
@@ -244,11 +241,41 @@ Ein **DevContainer** ist eine standardisierte Entwicklungsumgebung basierend auf
 
 **Variante B: Lokal mit VS Code Dev Containers Extension**
 
-1. Installiere [Docker Desktop](https://www.docker.com/products/docker-desktop/) für Windows
-2. Installiere VS Code Extension: **Dev Containers** (ms-vscode-remote.remote-containers)
-3. Öffne das Projekt in VS Code
-4. Drücke `F1` → **Dev Containers: Reopen in Container**
-5. Warte auf Container-Build (~5-10 Min beim ersten Mal)
+Diese Methode empfiehlt sich für eine persistente lokale Entwicklungsumgebung, um Versionskonflikte zu vermeiden und die manuelle Konfiguration von Abhängigkeiten überflüssig zu machen.
+
+**1. Installation von Docker Desktop**
+Docker fungiert als Laufzeitumgebung für den Container.
+
+* **Docker Desktop für Windows** von der [offiziellen Website](https://www.docker.com/products/docker-desktop/) herunterladen und installieren.
+* **Wichtig:** Während der Installation sicherstellen, dass die Option zur Verwendung des **WSL 2** (Windows Subsystem for Linux) Backends aktiviert ist. Dies ist entscheidend für Performance und Kompatibilität.
+* Docker Desktop nach der Installation starten, um die Aktivität des Dienstes zu prüfen.
+
+**2. Installation der "Dev Containers" Erweiterung**
+Diese Erweiterung ermöglicht VS Code die Interaktion mit der Docker-Umgebung.
+
+* VS Code öffnen.
+* Zur **Erweiterungs-Leiste** (Symbol mit vier Quadraten in der linken Leiste) navigieren oder den Shortcut `Strg+Shift+X` nutzen.
+* Nach `Dev Containers` suchen.
+* Die offizielle Erweiterung von **Microsoft** (ID: `ms-vscode-remote.remote-containers`) installieren.
+
+**3. Projekt laden**
+
+* In VS Code `Datei` → `Ordner öffnen...` wählen.
+* Zum geklonten Projektverzeichnis `media-organizer` navigieren und dieses öffnen.
+
+**4. Umgebung initialisieren (Reopen in Container)**
+Dieser Schritt weist VS Code an, die definierte Container-Umgebung anstelle des lokalen Windows-Systems zu verwenden.
+
+* Die Befehlspalette mit `F1` (oder `Strg+Shift+P`) öffnen.
+* Den Befehl `Dev Containers: Reopen in Container` eingeben und mit Enter bestätigen.
+* *(Hinweis: VS Code erkennt die Konfigurationsdateien oft automatisch und bietet unten rechts ein Pop-up mit der Option "Reopen in Container" an).*
+
+**5. Initialer Build-Prozess**
+Beim ersten Start wird das Docker-Image erstellt und die Umgebung konfiguriert.
+
+* **Dauer:** Dieser Vorgang beinhaltet den Download und die Installation aller Systembibliotheken sowie Python-Pakete (DeepFace, PyTorch etc.) und kann initial 5 bis 10 Minuten in Anspruch nehmen.
+* **Status:** Der Fortschritt lässt sich über den Link "Show Log" im Benachrichtigungsfenster verfolgen.
+* Sobald das integrierte Terminal in VS Code eingabebereit ist, ist die Installation abgeschlossen und die Umgebung einsatzbereit.
 
 ```powershell
 # Container baut sich automatisch mit allen Dependencies

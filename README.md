@@ -304,7 +304,7 @@ Die App öffnet sich automatisch im Browser auf `http://localhost:8501`
 
 **➡️ [Ausführliche DevContainer-Anleitung](tools/TOOLS.md#5-entwicklungsumgebung-mit-devcontainer-optional-aber-empfohlen)**
 
-### � Online Demo
+### 🖥️ Online Demo
 
 **Wichtig:** Die App ist für den **lokalen Betrieb** konzipiert — alle Verarbeitungen (Personenerkennung, Sortierung, Emotionsanalyse) laufen direkt auf deinem Computer. Deine Bilder bleiben bei dir, nichts wird hochgeladen.
 
@@ -314,7 +314,7 @@ Um ein **Look & Feel** zu bekommen, wie die Benutzeroberfläche aussieht und fun
 
 > ⚠️ **Hinweis:** Die Demo-Version läuft mit eingeschränkten Ressourcen und Beispieldaten. Für die Verarbeitung deiner eigenen Bildersammlung installiere die App lokal wie oben beschrieben.
 
-### �🎯 Warum Streamlit?
+### 🎯 Warum Streamlit?
 
 - **Keine Web-Entwicklung nötig:** Reine Python-Datei, die sich in interaktive Webseiten verwandelt
 - **Schnelles Prototyping:** Von Kommandozeile zu GUI in Minuten statt Tagen

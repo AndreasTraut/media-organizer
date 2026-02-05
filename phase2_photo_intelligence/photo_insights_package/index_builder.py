@@ -144,7 +144,8 @@ class IndexBuilder:
         """
         if not Path(self.out_file).exists():
             return {}
-        return json.load(open(self.out_file, 'r', encoding='utf-8'))
+        with open(self.out_file, 'r', encoding='utf-8') as f:
+            return json.load(f)
 
 
 def load_index(path: str = None) -> dict:
@@ -160,4 +161,5 @@ def load_index(path: str = None) -> dict:
     path = path or config.DEFAULT_INDEX_PATH
     if not Path(path).exists():
         return {}
-    return json.load(open(path, 'r', encoding='utf-8'))
+    with open(path, 'r', encoding='utf-8') as f:
+        return json.load(f)

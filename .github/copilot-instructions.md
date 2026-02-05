@@ -42,6 +42,268 @@ Diese Datei definiert projektspezifische Regeln für die Erstellung und Pflege v
 
 ---
 
+## 📦 Python Package Organisation
+
+### Wann sollte ein Python-Modul in ein Package aufgeteilt werden?
+
+**Entscheidungskriterien:**
+- Python-Datei hat **mehr als 500 Zeilen** Code
+- Datei enthält **mehrere logisch unabhängige Komponenten** (z.B. Models, Database, Search, UI)
+- Funktionalität soll **wiederverwendbar** als Package sein
+- Code wird **komplexer** und braucht klare Struktur
+
+**Beispiel aus diesem Projekt:**
+- ✅ `photo_rag.py` → `photo_rag_package/` (war 367 Zeilen, ist jetzt modular)
+- 🔧 `photo_insights.py` (629 Zeilen) → Kandidat für Refactoring
+- 🔧 `photo_sort.py` → Kandidat, wenn Funktionalität erweitert wird
+
+### Package-Struktur nach Best Practices
+
+**Standard-Aufbau eines Packages:**
+```
+phase{n}_{modul_name}/
+├── {modul_name}_package/
+│   ├── __init__.py          # Public API, Haupt-Klasse
+│   ├── config.py            # Konfiguration, Environment-Variablen
+│   ├── models.py            # ML-Models oder Datenmodelle
+│   ├── {core_feature}.py    # Kern-Funktionalität (z.B. vector_db.py)
+│   ├── search.py            # Such-Logik (falls relevant)
+│   ├── chat.py              # LLM/Chat-Integration (falls relevant)
+│   ├── utils.py             # Hilfs-Funktionen
+│   ├── cli.py               # Command Line Interface
+│   ├── EXAMPLES.py          # Code-Beispiele und Demos
+│   ├── README.md            # Package-Dokumentation
+│   ├── ARCHITECTURE.md      # Technische Architektur
+│   └── MIGRATION_GUIDE.md   # Migrations-Anleitung von alter zu neuer Struktur
+└── {modul_name}.py          # Legacy-Datei (optional für Rückwärtskompatibilität)
+```
+
+**Vorbild:** `phase2_photo_intelligence/photo_rag_package/`
+
+### Datei-Verantwortlichkeiten
+
+| Datei | Zweck | Inhalt |
+|-------|-------|--------|
+| `__init__.py` | Public API | - Haupt-Klasse (z.B. `PhotoRAG`) mit einfacher API<br>- Imports aller wichtigen Komponenten<br>- `__all__` Liste für Export-Kontrolle<br>- Docstring mit Package-Beschreibung |
+| `config.py` | Konfiguration | - Environment-Variablen laden (z.B. via `python-dotenv`)<br>- Pfad-Konstanten (SOURCE, TARGET, INDEX_PATH)<br>- Feature-Flags (HAS_CLIP, HAS_FAISS)<br>- Default-Werte |
+| `models.py` | Model Management | - ML-Model Loading und Caching<br>- Model-Wrapper-Klassen<br>- Embedding-Generierung |
+| `{feature}.py` | Kern-Features | - Spezifische Features wie `vector_db.py`, `search.py`<br>- Eine Datei pro logische Komponente<br>- Klare Verantwortlichkeiten |
+| `utils.py` | Utilities | - Kleine Hilfs-Funktionen<br>- String-Manipulation<br>- Datei-Operationen<br>- Format-Konvertierungen |
+| `cli.py` | CLI Interface | - `argparse` oder `click` Setup<br>- Main-Funktion für Kommandozeile<br>- Help-Texte |
+| `EXAMPLES.py` | Beispiele | - Ausführbarer Code mit Beispiel-Nutzung<br>- Dokumentations-Code-Snippets<br>- Quick-Start Demos |
+
+### __init__.py Best Practices
+
+**Pflicht-Komponenten:**
+
+1. **Docstring** mit Package-Beschreibung und Modul-Liste
+2. **Imports** aller wichtigen Komponenten
+3. **Haupt-Klasse** die API vereinfacht (Facade-Pattern)
+4. **__all__** Liste für Export-Kontrolle
+
+**Beispiel-Struktur:**
+```python
+"""
+{package_name}
+
+Kurzbeschreibung des Packages.
+
+Module:
+- config: Konfiguration und Environment Setup
+- models: ML Model Management
+- {feature}: Beschreibung
+- utils: Utility-Funktionen
+- cli: Command Line Interface
+
+Beispiel-Nutzung:
+    from {package_name} import MainClass
+    
+    instance = MainClass()
+    results = instance.main_method(params)
+"""
+
+# Imports von Komponenten
+from .config import (
+    CONSTANT1, CONSTANT2,
+    HAS_FEATURE1, HAS_FEATURE2
+)
+from .models import ModelManager
+from .{feature} import FeatureClass
+from .utils import helper_function
+
+# Haupt-Klasse (Facade)
+class MainClass:
+    """
+    Hauptklasse für {Package}.
+    
+    Bietet vereinfachte API für alle Funktionen.
+    """
+    
+    def __init__(self, param1: str = None):
+        # Komponenten initialisieren
+        self.model_manager = ModelManager()
+        self.feature = FeatureClass(self.model_manager)
+    
+    def main_method(self, query: str, top_k: int = 5):
+        """
+        Haupt-Methode.
+        
+        Args:
+            query: Beschreibung
+            top_k: Anzahl
+            
+        Returns:
+            Ergebnisse
+        """
+        return self.feature.process(query, top_k)
+
+# Export-Kontrolle
+__all__ = [
+    'MainClass',
+    'ModelManager',
+    'FeatureClass',
+    'helper_function',
+]
+```
+
+### Namenskonventionen für Packages
+
+**Ordner-Namen:**
+- Format: `{modul_name}_package` (immer mit `_package` Suffix)
+- Beispiele: `photo_rag_package`, `photo_insights_package`, `photo_sort_package`
+- Kleinbuchstaben mit Unterstrichen (snake_case)
+
+**Datei-Namen:**
+- Modul-Dateien: snake_case (z.B. `vector_db.py`, `search_engine.py`)
+- Dokumentation: GROSSBUCHSTABEN (z.B. `README.md`, `EXAMPLES.py`)
+- Sprechende Namen die Verantwortlichkeit zeigen
+
+**Klassen-Namen:**
+- PascalCase für Klassen (z.B. `PhotoRAG`, `CLIPModelManager`, `VectorDatabase`)
+- Beschreibende Namen mit Kontext (nicht nur `Manager` oder `Handler`)
+
+**Funktionen/Methoden:**
+- snake_case (z.B. `build_vector_db()`, `sanitize_filename()`)
+- Verben für Aktionen (z.B. `load`, `save`, `search`, `build`)
+
+### Migration von Monolith zu Package
+
+**Schritte für Refactoring:**
+
+1. **Analyse der bestehenden Datei:**
+   - Identifiziere logische Komponenten
+   - Gruppiere verwandte Funktionen
+   - Erkenne Abhängigkeiten
+
+2. **Package-Struktur erstellen:**
+   ```bash
+   mkdir -p phase{n}_{modul}/{modul}_package
+   cd phase{n}_{modul}/{modul}_package
+   touch __init__.py config.py models.py utils.py cli.py
+   touch README.md ARCHITECTURE.md MIGRATION_GUIDE.md EXAMPLES.py
+   ```
+
+3. **Code aufteilen:**
+   - `config.py`: Alle Konstanten, Env-Variablen, Pfade
+   - `models.py`: ML-Models, Model-Loading
+   - Feature-Module: Logisch gruppierte Funktionalität
+   - `utils.py`: Generische Hilfsfunktionen
+   - `cli.py`: Main-Block und Argument-Parsing
+
+4. **__init__.py erstellen:**
+   - Haupt-Klasse als Facade
+   - Imports aller Komponenten
+   - Public API definieren
+
+5. **Dokumentation schreiben:**
+   - `README.md`: Überblick, Installation, Quick Start
+   - `ARCHITECTURE.md`: Technische Details, Klassendiagramme
+   - `MIGRATION_GUIDE.md`: Von alter zu neuer Struktur
+   - `EXAMPLES.py`: Ausführbare Beispiele
+
+6. **Tests anpassen:**
+   - Imports auf Package umstellen
+   - Funktionalität validieren
+
+7. **Legacy-Datei (optional):**
+   - Alte `.py`-Datei kann als Wrapper bleiben
+   - Importiert nur noch aus Package
+   - Für Rückwärtskompatibilität
+
+**Beispiel Migration:**
+```python
+# ALT: phase2_photo_intelligence/photo_insights.py (629 Zeilen)
+
+# NEU: phase2_photo_intelligence/photo_insights_package/__init__.py
+from .config import SOURCE, TARGET
+from .models import DeepFaceManager
+from .insights import InsightsGenerator
+from .utils import save_insights
+
+class PhotoInsights:
+    def __init__(self):
+        self.deepface = DeepFaceManager()
+        self.generator = InsightsGenerator(self.deepface)
+    
+    def generate(self, source_dir: str = None):
+        return self.generator.run(source_dir or SOURCE)
+
+# Legacy-Wrapper (optional): phase2_photo_intelligence/photo_insights.py
+from photo_insights_package import PhotoInsights
+# ... Rückwärtskompatibilität
+```
+
+### Best Practices
+
+**Code-Organisation:**
+- ✅ Eine Verantwortlichkeit pro Datei (Single Responsibility Principle)
+- ✅ Klare Abhängigkeiten (z.B. models → config, search → models)
+- ✅ Vermeidung von zirkulären Imports
+- ✅ Konstanten in `config.py`, nicht hardcoded
+
+**Dokumentation:**
+- ✅ Jedes Modul hat Docstring mit Zweck
+- ✅ Jede öffentliche Funktion/Klasse hat Docstring
+- ✅ Type Hints für alle Parameter und Returns
+- ✅ README.md mit Quick-Start-Beispiel
+
+**Testing:**
+- ✅ Testbare Module (kleine, fokussierte Funktionen)
+- ✅ Dependency Injection für bessere Tests
+- ✅ Mock-freundliche Struktur
+
+**Versionierung:**
+- ✅ Breaking Changes in MIGRATION_GUIDE.md dokumentieren
+- ✅ Legacy-Wrapper für sanfte Migration
+- ✅ Deprecation Warnings für alte Funktionen
+
+### Beispiel-Kommandos
+
+**Package erstellen:**
+```bash
+# Struktur anlegen
+mkdir -p phase2_photo_intelligence/photo_insights_package
+cd phase2_photo_intelligence/photo_insights_package
+
+# Dateien erstellen
+touch __init__.py config.py models.py insights.py utils.py cli.py
+touch README.md ARCHITECTURE.md MIGRATION_GUIDE.md EXAMPLES.py
+
+# Von Monolith extrahieren
+# (Manuell: Code-Blöcke in entsprechende Dateien verschieben)
+```
+
+**Package nutzen:**
+```python
+# Nach Refactoring
+from photo_insights_package import PhotoInsights
+
+insights = PhotoInsights()
+results = insights.generate()
+```
+
+---
+
 ## 📋 Grundstruktur einer Markdown-Datei
 
 ### Phasen-Dokumentation (docs/PHASE*.md)
@@ -341,6 +603,8 @@ linkedin: https://www.linkedin.com/posts/...
 
 ## 🎯 Zusammenfassung für GitHub Copilot
 
+### Markdown-Dateien
+
 Wenn du Markdown-Dateien in diesem Projekt erstellst oder bearbeitest:
 
 1. ✅ Nutze die etablierte Ordnerstruktur (`docs/` für Phasen-Docs)
@@ -353,3 +617,18 @@ Wenn du Markdown-Dateien in diesem Projekt erstellst oder bearbeitest:
 8. ✅ Halte die Struktur konsistent mit bestehenden Docs
 
 **Wichtigste Frage vor dem Erstellen:** *"Passt diese Datei zur Evolution des Projekts und würdigt sie Community-Feedback?"*
+
+### Python Packages
+
+Wenn du Python-Code in diesem Projekt organisierst oder refactorisierst:
+
+1. ✅ Prüfe ob Datei > 500 Zeilen oder mehrere logische Komponenten hat
+2. ✅ Erstelle Package-Struktur: `{modul}_package/` mit `__init__.py`, `config.py`, `models.py`, etc.
+3. ✅ Nutze das `photo_rag_package` als Vorbild für Struktur
+4. ✅ Implementiere Haupt-Klasse in `__init__.py` als einfache API (Facade Pattern)
+5. ✅ Trenne Verantwortlichkeiten: config, models, features, utils, cli
+6. ✅ Dokumentiere Package mit README.md, ARCHITECTURE.md, EXAMPLES.py
+7. ✅ Schreibe MIGRATION_GUIDE.md für Umstellung von Monolith zu Package
+8. ✅ Halte Legacy-Datei optional als Wrapper für Rückwärtskompatibilität
+
+**Wichtigste Frage vor dem Refactoring:** *"Ist die Datei komplex genug und profitiert die Wartbarkeit von modularer Struktur?"*

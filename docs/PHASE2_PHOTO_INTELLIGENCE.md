@@ -1,6 +1,6 @@
 # Phase 2: Photo Intelligence — Detaillierte Erklärung
 
-> 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py`  
+> 💾 **Module:** `phase2_photo_intelligence/photo_insights.py` + `phase2_photo_intelligence/photo_rag.py` (+ `photo_rag_v2.py`)  
 > 🚀 **LinkedIn Post:** Die Evolution zur Intelligence Suite (coming soon)  
 > 📦 **Feedback-getrieben:** Entwickelt basierend auf [Community-Feedback](https://www.linkedin.com/feed/update/urn:li:activity:7409246436468576257?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7409246436468576257%2C7411139961678131200%29&dashCommentUrn=urn%3Ali%3Afsd_comment%3A%287411139961678131200%2Curn%3Ali%3Aactivity%3A7409246436468576257%29)
 
@@ -332,6 +332,48 @@ python phase2_photo_intelligence/photo_rag.py --chat --min-score 0.2
 
 ---
 
+### 📦 Alternative: Photo RAG v2 (`photo_rag_v2.py`)
+
+> 💡 **Neu:** Modulare Version mit identischer Funktionalität, aber übersichtlicherer Code-Struktur
+
+**Was ist photo_rag_v2.py?**
+
+Eine moderne, modulare Implementierung von `photo_rag.py`, die das `photo_rag_package` nutzt:
+- ✅ **Gleiche CLI-Befehle** wie `photo_rag.py`
+- ✅ **Gleiche Funktionalität** (Suche, Chat, Vector-DB)
+- ✅ **91% weniger Code** (32 Zeilen vs. 367 Zeilen)
+- ✅ **Bessere Wartbarkeit** durch Separation of Concerns
+- ✅ **Einfachere Tests** durch modulare Struktur
+
+**Nutzung:**
+
+Ersetze `photo_rag.py` in allen Befehlen durch `photo_rag_v2.py`:
+
+```powershell
+# Vector-DB erstellen
+python phase2_photo_intelligence/photo_rag_v2.py --build-vector-db
+
+# Suchen
+python phase2_photo_intelligence/photo_rag_v2.py --query "beach in summer" --top-k 5
+
+# Suchen und kopieren
+python phase2_photo_intelligence/photo_rag_v2.py --query "Mountains" --use-target-from-env
+
+# Chat-Modus
+python phase2_photo_intelligence/photo_rag_v2.py --chat --min-score 0.3
+```
+
+**Wann welche Version nutzen?**
+
+| Version | Empfohlen für |
+|---------|--------------|
+| `photo_rag.py` | Produktiv-Nutzung (stabil, bewährt) |
+| `photo_rag_v2.py` | Entwicklung, Erweiterungen, Testing |
+
+> 📖 **Details zur modularen Struktur:** Siehe [`photo_rag_package/README.md`](../phase2_photo_intelligence/photo_rag_package/README.md)
+
+---
+
 ## 🚀 Installation & Quick Start
 
 ```powershell
@@ -354,11 +396,14 @@ OPENAI_API_KEY=sk-...  # Optional für Chat-Modus
 # 3. Index aufbauen
 python phase2_photo_intelligence/photo_insights.py --build-index --out insights_index.json
 python phase2_photo_intelligence/photo_rag.py --build-vector-db
+# ODER: python phase2_photo_intelligence/photo_rag_v2.py --build-vector-db
 
 # 4. Suche starten
 python phase2_photo_intelligence/photo_rag.py --query "beach in summer" --top-k 5
+# ODER: python phase2_photo_intelligence/photo_rag_v2.py --query "beach in summer" --top-k 5
 python phase2_photo_intelligence/photo_insights.py --find-person --index-path insights_index.json
 python phase2_photo_intelligence/photo_rag.py --chat
+# ODER: python phase2_photo_intelligence/photo_rag_v2.py --chat
 ```
 
 > ⏱️ Index-Aufbau: ~1-2 Min pro 1.000 Bilder | 💾 RAM: 8GB+ empfohlen

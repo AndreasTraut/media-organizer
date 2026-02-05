@@ -197,7 +197,7 @@ __all__ = [
 
 2. **Package-Struktur erstellen:**
    ```bash
-   mkdir -p phase{n}_{modul}/_{modul}_package
+   mkdir -p phase{n}_{modul}/{modul}_package
    cd phase{n}_{modul}/{modul}_package
    touch __init__.py config.py models.py utils.py cli.py
    touch README.md ARCHITECTURE.md MIGRATION_GUIDE.md EXAMPLES.py

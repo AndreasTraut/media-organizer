@@ -40,3 +40,13 @@ demo_bilder/known_faces/*
 demo_bilder/SCENES_LOG.txt
 photo_vectors_mapping.json
 photo_vectors_mappings.json
+
+# PyInstaller Build-Artefakte
+dist/build/
+dist/output/
+dist/*.spec
+*.spec
+build/
+*.exe
+*.app
+*.dmg

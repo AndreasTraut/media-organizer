@@ -68,10 +68,11 @@ Die Streamlit-GUI startet automatisch im Standard-Browser.
    - Dies ist normal für selbst-erstellte .exe-Dateien
    - Erlaube den Zugriff für Streamlit (Port 8501)
 
-4. **Python-Runtime erforderlich**
-   - Die .exe ist **NICHT vollständig standalone**
-   - Python 3.12+ muss auf dem Ziel-System installiert sein
-   - Alternative: Verwende `--onefile` mit embedded Python (komplexer)
+4. **Die .exe ist standalone**
+   - PyInstaller bündelt Python + alle Dependencies in die .exe
+   - **Keine separate Python-Installation** auf dem Ziel-System erforderlich
+   - Die .exe ist selbst-ausreichend, aber sehr groß (500 MB - 1.5 GB)
+   - Erste Ausführung entpackt in temporären Ordner (daher langsam)
 
 ## 📋 Datei-Größe
 

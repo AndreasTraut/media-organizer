@@ -323,7 +323,7 @@ Die Launcher:
 
 **Standalone .exe erstellen:**
 
-Für Distribution an Endnutzer ohne Python-Installation kann eine .exe-Datei erstellt werden:
+Für einfachere Distribution kann eine .exe-Datei erstellt werden (PyInstaller bündelt Python + Dependencies in die .exe):
 
 ```bash
 # PyInstaller installieren

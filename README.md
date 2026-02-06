@@ -31,6 +31,7 @@ Dieses Projekt automatisiert die Sortierung von großen Bild- und Videomengen (z
 3. [Streamlit GUI — Grafische Oberfläche](#%EF%B8%8F-streamlit-gui--grafische-oberfläche)
    - [Was kann die GUI?](#-was-kann-die-gui)
    - [Quick Start](#-quick-start)
+   - [Launcher und Ausführbare Dateien](#-launcher-und-ausführbare-dateien)
    - [Warum Streamlit?](#-warum-streamlit)
 4. [Tech Stack](#-tech-stack)
    - [Phase 1: Basis-Module (Photo Sort)](#phase-1-basis-module-photo-sort)
@@ -299,6 +300,43 @@ streamlit run app.py
 ```
 
 Die App öffnet sich automatisch im Browser auf `http://localhost:8501`
+
+### 📦 Launcher und Ausführbare Dateien
+
+Für maximalen Komfort gibt es vorgefertigte Launcher-Skripte im `dist/` Ordner:
+
+**Windows - Einfacher Start per Doppelklick:**
+```bash
+dist/launcher.bat
+```
+
+**Cross-platform - Python Launcher:**
+```bash
+python dist/launcher.py
+```
+
+Die Launcher:
+- ✅ Prüfen automatisch die Python-Installation
+- ✅ Installieren fehlende Dependencies
+- ✅ Starten die Streamlit GUI
+- ✅ Öffnen den Browser automatisch
+
+**Standalone .exe erstellen:**
+
+Für einfachere Distribution kann eine .exe-Datei erstellt werden (PyInstaller bündelt Python + Dependencies in die .exe):
+
+```bash
+# PyInstaller installieren
+pip install pyinstaller
+
+# .exe erstellen
+python dist/build_exe.py
+
+# Fertige .exe liegt in:
+dist/output/MediaOrganizer.exe
+```
+
+**➡️ [Detaillierte Anleitung: Launcher, .exe-Erstellung und Troubleshooting](dist/README.md)**
 
 **🐳 DevContainer - Die einfachste Methode:** Nutze die vorkonfigurierte DevContainer-Umgebung – alles funktioniert out-of-the-box ohne manuelle Dependency-Installation.
 
